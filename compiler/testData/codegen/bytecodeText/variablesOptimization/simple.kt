@@ -29,3 +29,4 @@ fun box(): String {
 // 0 LOAD 1
 // 0 LOAD 2
 // 4 LOAD 3
+// 8 STORE

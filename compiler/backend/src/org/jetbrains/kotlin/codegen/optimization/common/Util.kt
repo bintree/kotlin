@@ -23,4 +23,19 @@ import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
 
 fun AbstractInsnNode.isStoreOperation(): Boolean = getOpcode() in Opcodes.ISTORE..Opcodes.ASTORE
 fun AbstractInsnNode.isLoadOperation(): Boolean = getOpcode() in Opcodes.ILOAD..Opcodes.ALOAD
+fun AbstractInsnNode.isReturnOperation(): Boolean = getOpcode() in Opcodes.IRETURN..Opcodes.RETURN
 fun <V : BasicValue?> Frame<V>.getStackTop(): V = getStack(getStackSize() - 1)
+
+class InsnStream(val from: AbstractInsnNode, val to: AbstractInsnNode?) : Stream<AbstractInsnNode> {
+    override fun iterator(): Iterator<AbstractInsnNode> {
+        return object : Iterator<AbstractInsnNode> {
+            var current = from
+            override fun next(): AbstractInsnNode {
+                val result = current
+                current = current.getNext()
+                return result
+            }
+            override fun hasNext() = current != to
+        }
+    }
+}

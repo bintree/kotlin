@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.codegen.inline.InlineCodegenUtil;
 import org.jetbrains.kotlin.codegen.optimization.boxing.RedundantBoxingMethodTransformer;
 import org.jetbrains.kotlin.codegen.optimization.boxing.RedundantNullCheckMethodTransformer;
 import org.jetbrains.kotlin.codegen.optimization.transformer.MethodTransformer;
+import org.jetbrains.kotlin.codegen.optimization.variables.RedundantStoreMethodTransformer;
 import org.jetbrains.kotlin.codegen.optimization.variables.VariablesCopyPropagationMethodTransformer;
 import org.jetbrains.org.objectweb.asm.MethodVisitor;
 import org.jetbrains.org.objectweb.asm.Opcodes;
@@ -38,7 +39,7 @@ public class OptimizationMethodVisitor extends MethodVisitor {
     private static final MethodTransformer[] TRANSFORMERS = new MethodTransformer[]{
             new RedundantNullCheckMethodTransformer(), new RedundantBoxingMethodTransformer(),
             new RedundantGotoMethodTransformer(), new StoreStackBeforeInlineMethodTransformer(),
-            new VariablesCopyPropagationMethodTransformer()
+            new VariablesCopyPropagationMethodTransformer(), new RedundantStoreMethodTransformer()
     };
 
     private final MethodNode methodNode;
