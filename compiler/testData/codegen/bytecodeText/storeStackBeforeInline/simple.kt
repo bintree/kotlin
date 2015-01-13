@@ -10,5 +10,5 @@ fun foo() : Int {
 }
 
 // 3 ISTORE
-// 11 ILOAD
+// 10 ILOAD
 // 0 InlineMarker
