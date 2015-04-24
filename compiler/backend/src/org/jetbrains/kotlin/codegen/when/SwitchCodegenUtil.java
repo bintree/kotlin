@@ -23,10 +23,13 @@ import org.jetbrains.kotlin.codegen.ExpressionCodegen;
 import org.jetbrains.kotlin.codegen.binding.CodegenBinding;
 import org.jetbrains.kotlin.psi.*;
 import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant;
 import org.jetbrains.kotlin.resolve.constants.IntegerValueConstant;
 import org.jetbrains.kotlin.resolve.constants.NullValue;
 import org.jetbrains.kotlin.resolve.constants.StringValue;
+import org.jetbrains.kotlin.resolve.constants.evaluate.ConstantExpressionEvaluator;
+import org.jetbrains.kotlin.types.TypeUtils;
 import org.jetbrains.org.objectweb.asm.Type;
 
 import java.util.ArrayList;
@@ -35,7 +38,7 @@ import java.util.List;
 public class SwitchCodegenUtil {
     public static boolean checkAllItemsAreConstantsSatisfying(
             @NotNull JetWhenExpression expression,
-            @NotNull BindingContext bindingContext,
+            @NotNull BindingTrace bindingContext,
             Function1<CompileTimeConstant, Boolean> predicate
     ) {
         for (JetWhenEntry entry : expression.getEntries()) {
@@ -49,7 +52,7 @@ public class SwitchCodegenUtil {
 
                 assert patternExpression != null : "expression in when should not be null";
 
-                CompileTimeConstant constant = ExpressionCodegen.getCompileTimeConstant(patternExpression, bindingContext);
+                CompileTimeConstant constant = getCompileTimeConstant(bindingContext, patternExpression);
                 if (constant == null || !predicate.invoke(constant)) {
                     return false;
                 }
@@ -62,7 +65,7 @@ public class SwitchCodegenUtil {
     @NotNull
     public static Iterable<CompileTimeConstant> getAllConstants(
             @NotNull JetWhenExpression expression,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
         List<CompileTimeConstant> result = new ArrayList<CompileTimeConstant>();
 
@@ -76,7 +79,7 @@ public class SwitchCodegenUtil {
     private static void addConstantsFromEntry(
             @NotNull List<CompileTimeConstant> result,
             @NotNull JetWhenEntry entry,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
         for (JetWhenCondition condition : entry.getConditions()) {
             if (!(condition instanceof JetWhenConditionWithExpression)) continue;
@@ -84,14 +87,18 @@ public class SwitchCodegenUtil {
             JetExpression patternExpression = ((JetWhenConditionWithExpression) condition).getExpression();
 
             assert patternExpression != null : "expression in when should not be null";
-            result.add(ExpressionCodegen.getCompileTimeConstant(patternExpression, bindingContext));
+            result.add(getCompileTimeConstant(bindingContext, patternExpression));
         }
+    }
+
+    private static CompileTimeConstant getCompileTimeConstant(@NotNull BindingTrace bindingTrace, JetExpression expression) {
+        return ConstantExpressionEvaluator.evaluate(expression, bindingTrace, TypeUtils.NO_EXPECTED_TYPE);
     }
 
     @NotNull
     public static Iterable<CompileTimeConstant> getConstantsFromEntry(
             @NotNull JetWhenEntry entry,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
         List<CompileTimeConstant> result = new ArrayList<CompileTimeConstant>();
         addConstantsFromEntry(result, entry, bindingContext);
@@ -104,7 +111,7 @@ public class SwitchCodegenUtil {
             boolean isStatement,
             @NotNull ExpressionCodegen codegen
     ) {
-        BindingContext bindingContext = codegen.getBindingContext();
+        BindingTrace bindingContext = codegen.getState().getBindingTrace();
         if (!isThereConstantEntriesButNulls(expression, bindingContext)) {
             return null;
         }
@@ -130,7 +137,7 @@ public class SwitchCodegenUtil {
 
     private static boolean isThereConstantEntriesButNulls(
             @NotNull JetWhenExpression expression,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
         for (CompileTimeConstant constant : getAllConstants(expression, bindingContext)) {
             if (constant != null && !(constant instanceof NullValue)) return true;
@@ -142,7 +149,7 @@ public class SwitchCodegenUtil {
     private static boolean isIntegralConstantsSwitch(
             @NotNull JetWhenExpression expression,
             @NotNull Type subjectType,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
         int typeSort = subjectType.getSort();
 
@@ -163,7 +170,7 @@ public class SwitchCodegenUtil {
     private static boolean isStringConstantsSwitch(
             @NotNull JetWhenExpression expression,
             @NotNull Type subjectType,
-            @NotNull BindingContext bindingContext
+            @NotNull BindingTrace bindingContext
     ) {
 
         if (!subjectType.getClassName().equals(String.class.getName())) {

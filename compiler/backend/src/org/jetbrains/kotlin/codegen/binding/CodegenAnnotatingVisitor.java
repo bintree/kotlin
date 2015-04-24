@@ -523,7 +523,7 @@ class CodegenAnnotatingVisitor extends JetVisitorVoid {
 
         WhenByEnumsMapping mapping = new WhenByEnumsMapping(classDescriptor, currentClassName, fieldNumber);
 
-        for (CompileTimeConstant constant : SwitchCodegenUtil.getAllConstants(expression, bindingContext)) {
+        for (CompileTimeConstant constant : SwitchCodegenUtil.getAllConstants(expression, bindingTrace)) {
             if (constant instanceof NullValue) continue;
 
             assert constant instanceof EnumValue : "expression in when should be EnumValue";
@@ -539,7 +539,7 @@ class CodegenAnnotatingVisitor extends JetVisitorVoid {
         return WhenChecker.isWhenByEnum(expression, bindingContext) &&
                SwitchCodegenUtil.checkAllItemsAreConstantsSatisfying(
                        expression,
-                       bindingContext,
+                       bindingTrace,
                        new Function1<CompileTimeConstant, Boolean>() {
                            @Override
                            public Boolean invoke(@NotNull CompileTimeConstant constant) {

@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.codegen.FrameMap;
 import org.jetbrains.kotlin.psi.JetWhenEntry;
 import org.jetbrains.kotlin.psi.JetWhenExpression;
 import org.jetbrains.kotlin.resolve.BindingContext;
+import org.jetbrains.kotlin.resolve.BindingTrace;
 import org.jetbrains.kotlin.resolve.constants.CompileTimeConstant;
 import org.jetbrains.kotlin.resolve.constants.NullValue;
 import org.jetbrains.kotlin.types.JetType;
@@ -36,7 +37,7 @@ abstract public class SwitchCodegen {
     protected final JetWhenExpression expression;
     protected final boolean isStatement;
     protected final ExpressionCodegen codegen;
-    protected final BindingContext bindingContext;
+    protected final BindingTrace bindingContext;
     protected final Type subjectType;
     protected final Type resultType;
     protected final InstructionAdapter v;
@@ -54,7 +55,7 @@ abstract public class SwitchCodegen {
         this.expression = expression;
         this.isStatement = isStatement;
         this.codegen = codegen;
-        this.bindingContext = codegen.getBindingContext();
+        this.bindingContext = codegen.getState().getBindingTrace();
 
         subjectType = codegen.expressionType(expression.getSubjectExpression());
         resultType = isStatement ? Type.VOID_TYPE : codegen.expressionType(expression);
