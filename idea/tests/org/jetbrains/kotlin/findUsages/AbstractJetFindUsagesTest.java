@@ -357,7 +357,7 @@ public abstract class AbstractJetFindUsagesTest extends JetLightCodeInsightFixtu
         }
     }
 
-    private <T extends PsiElement> void findUsagesAndCheckResults(
+    protected <T extends PsiElement> void findUsagesAndCheckResults(
             @NotNull String mainFileText,
             @NotNull String prefix,
             @NotNull String rootPath,
