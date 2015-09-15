@@ -22,6 +22,7 @@ import org.jetbrains.kotlin.diagnostics.Diagnostic
 import org.jetbrains.kotlin.idea.quickfix.CleanupFix
 import org.jetbrains.kotlin.idea.quickfix.JetIntentionAction
 import org.jetbrains.kotlin.idea.quickfix.JetSingleIntentionActionFactory
+import org.jetbrains.kotlin.idea.quickfix.JetWholeProjectForEachElementOfTypeFix
 import org.jetbrains.kotlin.psi.JetAnnotationEntry
 import org.jetbrains.kotlin.psi.JetFile
 import org.jetbrains.kotlin.idea.quickfix.quickfixUtil.*
@@ -34,5 +35,11 @@ public class UnescapedAnnotationFix(element: JetAnnotationEntry) : JetIntentionA
 
     companion object Factory : JetSingleIntentionActionFactory() {
         override fun createAction(diagnostic: Diagnostic) = diagnostic.createIntentionForFirstParentOfType(::UnescapedAnnotationFix)
+
+        fun multi() = JetWholeProjectForEachElementOfTypeFix.createByPredicate<JetAnnotationEntry>(
+                predicate = { !it.hasAtSymbolOrInList() },
+                taskProcessor = { it.addAtSymbol() },
+                name = "qqq"
+        )
     }
 }
