@@ -1,0 +1,6 @@
+package
+
+public fun </*0*/ T : F?, /*1*/ F> foo1(): kotlin.Unit
+public fun </*0*/ T : F?, /*1*/ F : E, /*2*/ E> foo2(): kotlin.Unit
+public fun </*0*/ T : F?, /*1*/ F> foo3(): kotlin.Unit
+public fun </*0*/ T : F?, /*1*/ F : E, /*2*/ E> foo4(): kotlin.Unit
