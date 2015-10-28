@@ -43,12 +43,29 @@ public class PropertyGetterDescriptorImpl extends PropertyAccessorDescriptorImpl
             boolean isExternal,
             @NotNull Kind kind,
             @Nullable PropertyGetterDescriptor original,
-            @NotNull SourceElement source
+            @NotNull SourceElement source,
+            @Nullable FunctionDescriptor originalSignatureDescriptor
     )
     {
         super(modality, visibility, correspondingProperty, annotations, Name.special("<get-" + correspondingProperty.getName() + ">"),
-              hasBody, isDefault, isExternal, kind, source);
+              hasBody, isDefault, isExternal, kind, source, originalSignatureDescriptor);
         this.original = original != null ? original : this;
+    }
+
+
+    public PropertyGetterDescriptorImpl(
+            @NotNull PropertyDescriptor correspondingProperty,
+            @NotNull Annotations annotations,
+            @NotNull Modality modality,
+            @NotNull Visibility visibility,
+            boolean hasBody,
+            boolean isDefault,
+            boolean isExternal,
+            @NotNull Kind kind,
+            @Nullable PropertyGetterDescriptor original,
+            @NotNull SourceElement source
+    ) {
+        this(correspondingProperty, annotations, modality, visibility, hasBody, isDefault, isExternal, kind, original, source, null);
     }
     
     public void initialize(KotlinType returnType) {

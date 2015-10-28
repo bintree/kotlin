@@ -97,7 +97,8 @@ public class AccessorForPropertyDescriptor extends PropertyDescriptorImpl implem
             super(property, Annotations.Companion.getEMPTY(), Modality.FINAL, Visibilities.LOCAL,
                   false, false,
                   /* isExternal = */ false,
-                  Kind.DECLARATION, null, SourceElement.NO_SOURCE);
+                  Kind.DECLARATION, null, SourceElement.NO_SOURCE,
+                  property.getGetter() != null ? property.getGetter().getOriginalSignatureDescriptor() : null);
             initialize(property.getType());
         }
 
@@ -121,7 +122,8 @@ public class AccessorForPropertyDescriptor extends PropertyDescriptorImpl implem
             super(property, Annotations.Companion.getEMPTY(), Modality.FINAL, Visibilities.LOCAL,
                   false, false,
                   /* isExternal = */ false,
-                  Kind.DECLARATION, null, SourceElement.NO_SOURCE);
+                  Kind.DECLARATION, null, SourceElement.NO_SOURCE,
+                  property.getSetter() != null ? property.getSetter().getOriginalSignatureDescriptor() : null);
             initializeDefault();
         }
 

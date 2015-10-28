@@ -73,10 +73,24 @@ public class DescriptorFactory {
             @NotNull Visibility visibility,
             @NotNull SourceElement sourceElement
     ) {
+        return createSetter(propertyDescriptor, annotations, isDefault, isExternal, visibility, sourceElement, null);
+    }
+
+    @NotNull
+    public static PropertySetterDescriptorImpl createSetter(
+            @NotNull PropertyDescriptor propertyDescriptor,
+            @NotNull Annotations annotations,
+            boolean isDefault,
+            boolean isExternal,
+            @NotNull Visibility visibility,
+            @NotNull SourceElement sourceElement,
+            @Nullable FunctionDescriptor originalSignatureDescriptor
+    ) {
         PropertySetterDescriptorImpl setterDescriptor =
                 new PropertySetterDescriptorImpl(propertyDescriptor, annotations, propertyDescriptor.getModality(),
                                                  visibility, !isDefault, isDefault, isExternal,
-                                                 CallableMemberDescriptor.Kind.DECLARATION, null, sourceElement);
+                                                 CallableMemberDescriptor.Kind.DECLARATION, null, sourceElement,
+                                                 originalSignatureDescriptor);
         setterDescriptor.initializeDefault();
         return setterDescriptor;
     }
@@ -105,10 +119,23 @@ public class DescriptorFactory {
             @NotNull Annotations annotations,
             boolean isDefault,
             boolean isExternal,
-            @NotNull SourceElement sourceElement) {
+            @NotNull SourceElement sourceElement
+    ) {
+        return createGetter(propertyDescriptor, annotations, isDefault, isExternal, sourceElement, null);
+    }
+
+    @NotNull
+    public static PropertyGetterDescriptorImpl createGetter(
+            @NotNull PropertyDescriptor propertyDescriptor,
+            @NotNull Annotations annotations,
+            boolean isDefault,
+            boolean isExternal,
+            @NotNull SourceElement sourceElement,
+            @Nullable FunctionDescriptor originalSignatureDescriptor
+    ) {
         return new PropertyGetterDescriptorImpl(propertyDescriptor, annotations, propertyDescriptor.getModality(),
                                                 propertyDescriptor.getVisibility(), !isDefault, isDefault, isExternal,
-                                                CallableMemberDescriptor.Kind.DECLARATION, null, sourceElement);
+                                                CallableMemberDescriptor.Kind.DECLARATION, null, sourceElement, originalSignatureDescriptor);
     }
 
     @NotNull

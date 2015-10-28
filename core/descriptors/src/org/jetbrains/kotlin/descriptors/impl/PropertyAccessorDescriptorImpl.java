@@ -37,6 +37,8 @@ public abstract class PropertyAccessorDescriptorImpl extends DeclarationDescript
     private final PropertyDescriptor correspondingProperty;
     private final Kind kind;
     private Visibility visibility;
+    @Nullable
+    private final FunctionDescriptor originalSignatureDescriptor;
 
     public PropertyAccessorDescriptorImpl(
             @NotNull Modality modality,
@@ -48,7 +50,8 @@ public abstract class PropertyAccessorDescriptorImpl extends DeclarationDescript
             boolean isDefault,
             boolean isExternal,
             Kind kind,
-            @NotNull SourceElement source
+            @NotNull SourceElement source,
+            @Nullable FunctionDescriptor originalSignatureDescriptor
     ) {
         super(correspondingProperty.getContainingDeclaration(), annotations, name, source);
         this.modality = modality;
@@ -58,6 +61,7 @@ public abstract class PropertyAccessorDescriptorImpl extends DeclarationDescript
         this.isDefault = isDefault;
         this.isExternal = isExternal;
         this.kind = kind;
+        this.originalSignatureDescriptor = originalSignatureDescriptor;
     }
 
     @Override
@@ -189,4 +193,18 @@ public abstract class PropertyAccessorDescriptorImpl extends DeclarationDescript
     @NotNull
     @Override
     public abstract PropertyAccessorDescriptor getOriginal();
+
+    @Override
+    @Nullable
+    public FunctionDescriptor getOriginalSignatureDescriptor() {
+        return originalSignatureDescriptor;
+    }
+
+    @Nullable
+    public FunctionDescriptor getSubstitutedOriginalSignatureDescriptor(
+            @NotNull TypeSubstitutor substitutor
+    ) {
+        if (originalSignatureDescriptor != null) return originalSignatureDescriptor.substitute(substitutor);
+        return null;
+    }
 }

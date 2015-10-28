@@ -384,7 +384,7 @@ public class LazyJavaClassMemberScope(
         }
 
         val propertyDescriptor = JavaPropertyDescriptor(
-                getContainingDeclaration(), Annotations.EMPTY, getterMethod.modality, getterMethod.visibility,
+                getterMethod.containingDeclaration, Annotations.EMPTY, getterMethod.modality, getterMethod.visibility,
                 /* isVar = */ setterMethod != null, overriddenProperty.name, getterMethod.source,
                 /* original */ null,
                 /* isStaticFinal = */ false
@@ -394,14 +394,14 @@ public class LazyJavaClassMemberScope(
 
         val getter = DescriptorFactory.createGetter(
                 propertyDescriptor, getterMethod.annotations, /* isDefault = */false,
-                /* isExternal = */ false, getterMethod.source
+                /* isExternal = */ false, getterMethod.source, getterMethod
         ).apply {
             initialize(propertyDescriptor.type)
         }
 
         val setter = setterMethod?.let { setterMethod ->
             DescriptorFactory.createSetter(propertyDescriptor, setterMethod.annotations, /* isDefault = */false,
-            /* isExternal = */ false, setterMethod.visibility, setterMethod.source)
+            /* isExternal = */ false, setterMethod.visibility, setterMethod.source, setterMethod)
         }
 
         return propertyDescriptor.apply { initialize(getter, setter) }

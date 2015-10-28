@@ -1089,7 +1089,7 @@ public class DescriptorResolver {
                                                                 resolveVisibilityFromModifiers(getter, propertyDescriptor.getVisibility()),
                                                                 getter.hasBody(), false, getter.hasModifier(EXTERNAL_KEYWORD),
                                                                 CallableMemberDescriptor.Kind.DECLARATION, null, KotlinSourceElementKt
-                                                                        .toSourceElement(getter));
+                                                                        .toSourceElement(getter), /* originalSignatureDescriptor = */ null);
             getterDescriptor.initialize(returnType);
             trace.record(BindingContext.PROPERTY_ACCESSOR, getter, getterDescriptor);
         }

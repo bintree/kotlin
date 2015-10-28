@@ -45,12 +45,29 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
             boolean isExternal,
             @NotNull Kind kind,
             @Nullable PropertySetterDescriptor original,
-            @NotNull SourceElement source
+            @NotNull SourceElement source,
+            @Nullable FunctionDescriptor originalSignatureDescriptor
     ) {
         super(modality, visibility, correspondingProperty, annotations, Name.special("<set-" + correspondingProperty.getName() + ">"),
-              hasBody, isDefault, isExternal, kind, source);
+              hasBody, isDefault, isExternal, kind, source, originalSignatureDescriptor);
         this.original = original != null ? original : this;
     }
+
+    public PropertySetterDescriptorImpl(
+            @NotNull PropertyDescriptor correspondingProperty,
+            @NotNull Annotations annotations,
+            @NotNull Modality modality,
+            @NotNull Visibility visibility,
+            boolean hasBody,
+            boolean isDefault,
+            boolean isExternal,
+            @NotNull Kind kind,
+            @Nullable PropertySetterDescriptor original,
+            @NotNull SourceElement source
+    ) {
+        this(correspondingProperty, annotations, modality, visibility, hasBody, isDefault, isExternal, kind, original, source, null);
+    }
+
 
     public void initialize(@NotNull ValueParameterDescriptor parameter) {
         assert this.parameter == null;
