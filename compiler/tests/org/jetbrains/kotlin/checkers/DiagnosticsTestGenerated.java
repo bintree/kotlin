@@ -6671,9 +6671,9 @@ public class DiagnosticsTestGenerated extends AbstractDiagnosticsTest {
                     doTest(fileName);
                 }
 
-                @TestMetadata("importedInner.kt")
-                public void testImportedInner() throws Exception {
-                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/generics/innerClasses/importedInner.kt");
+                @TestMetadata("inheritance.kt")
+                public void testInheritance() throws Exception {
+                    String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/diagnostics/tests/generics/innerClasses/inheritance.kt");
                     doTest(fileName);
                 }
 

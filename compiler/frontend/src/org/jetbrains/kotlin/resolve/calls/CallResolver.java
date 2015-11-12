@@ -346,16 +346,31 @@ public class CallResolver {
             context.trace.report(NOT_A_CLASS.on(expression));
             return checkArgumentTypesAndFail(context);
         }
+
         ClassDescriptor classDescriptor = (ClassDescriptor) declarationDescriptor;
+
         Collection<ConstructorDescriptor> constructors = classDescriptor.getConstructors();
         if (constructors.isEmpty()) {
             context.trace.report(NO_CONSTRUCTOR.on(CallUtilKt.getValueArgumentListOrElement(context.call)));
             return checkArgumentTypesAndFail(context);
         }
         Collection<ResolutionCandidate<CallableDescriptor>> candidates =
-                taskPrioritizer.<CallableDescriptor>convertWithImpliedThisAndNoReceiver(context.scope, constructors, context.call);
+                taskPrioritizer.<CallableDescriptor>convertWithImpliedThisAndNoReceiver(
+                        context.scope, substituteAll(constructors, TypeSubstitutor.create(constructedType)), context.call);
 
         return computeTasksFromCandidatesAndResolvedCall(context, functionReference, candidates, CallTransformer.FUNCTION_CALL_TRANSFORMER);
+    }
+
+    private static Collection<CallableDescriptor> substituteAll(
+            Collection<? extends CallableDescriptor> candidates,
+            TypeSubstitutor substitutor
+    ) {
+        List<CallableDescriptor> result = new ArrayList<CallableDescriptor>(candidates.size());
+        for (CallableDescriptor candidate : candidates) {
+            result.add(candidate.substitute(substitutor));
+        }
+
+        return result;
     }
 
     @Nullable
