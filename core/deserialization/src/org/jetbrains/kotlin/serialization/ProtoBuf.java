@@ -7552,6 +7552,45 @@ public final class ProtoBuf {
      */
     int getEnumEntry(int index);
 
+    // repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    java.util.List<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> 
+        getTypeParameterFromEnclosingDeclarationList();
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter getTypeParameterFromEnclosingDeclaration(int index);
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    int getTypeParameterFromEnclosingDeclarationCount();
+
     // optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;
     /**
      * <code>optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;</code>
@@ -7723,6 +7762,14 @@ public final class ProtoBuf {
               input.popLimit(limit);
               break;
             }
+            case 106: {
+              if (!((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+                typeParameterFromEnclosingDeclaration_ = new java.util.ArrayList<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter>();
+                mutable_bitField0_ |= 0x00000800;
+              }
+              typeParameterFromEnclosingDeclaration_.add(input.readMessage(org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter.PARSER, extensionRegistry));
+              break;
+            }
             case 242: {
               org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.Builder subBuilder = null;
               if (((bitField0_ & 0x00000008) == 0x00000008)) {
@@ -7767,6 +7814,9 @@ public final class ProtoBuf {
         }
         if (((mutable_bitField0_ & 0x00000400) == 0x00000400)) {
           enumEntry_ = java.util.Collections.unmodifiableList(enumEntry_);
+        }
+        if (((mutable_bitField0_ & 0x00000800) == 0x00000800)) {
+          typeParameterFromEnclosingDeclaration_ = java.util.Collections.unmodifiableList(typeParameterFromEnclosingDeclaration_);
         }
         makeExtensionsImmutable();
       }
@@ -8216,6 +8266,82 @@ public final class ProtoBuf {
     }
     private int enumEntryMemoizedSerializedSize = -1;
 
+    // repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;
+    public static final int TYPE_PARAMETER_FROM_ENCLOSING_DECLARATION_FIELD_NUMBER = 13;
+    private java.util.List<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> typeParameterFromEnclosingDeclaration_;
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    public java.util.List<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> getTypeParameterFromEnclosingDeclarationList() {
+      return typeParameterFromEnclosingDeclaration_;
+    }
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    public java.util.List<? extends org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameterOrBuilder> 
+        getTypeParameterFromEnclosingDeclarationOrBuilderList() {
+      return typeParameterFromEnclosingDeclaration_;
+    }
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    public int getTypeParameterFromEnclosingDeclarationCount() {
+      return typeParameterFromEnclosingDeclaration_.size();
+    }
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    public org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter getTypeParameterFromEnclosingDeclaration(int index) {
+      return typeParameterFromEnclosingDeclaration_.get(index);
+    }
+    /**
+     * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+     *
+     * <pre>
+     * This is probably a temporary solution for the problem that currently
+     * there is no easy way to retrive enclosing function of local class.
+     * But some types of local class still could refer to type parameters
+     * of this function or type parameters of containing declaration of this function, etc.
+     * So we just create copies of these type parameters in case of local classes.
+     * </pre>
+     */
+    public org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameterOrBuilder getTypeParameterFromEnclosingDeclarationOrBuilder(
+        int index) {
+      return typeParameterFromEnclosingDeclaration_.get(index);
+    }
+
     // optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;
     public static final int TYPE_TABLE_FIELD_NUMBER = 30;
     private org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable typeTable_;
@@ -8244,6 +8370,7 @@ public final class ProtoBuf {
       function_ = java.util.Collections.emptyList();
       property_ = java.util.Collections.emptyList();
       enumEntry_ = java.util.Collections.emptyList();
+      typeParameterFromEnclosingDeclaration_ = java.util.Collections.emptyList();
       typeTable_ = org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
@@ -8281,6 +8408,12 @@ public final class ProtoBuf {
       }
       for (int i = 0; i < getPropertyCount(); i++) {
         if (!getProperty(i).isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
+      }
+      for (int i = 0; i < getTypeParameterFromEnclosingDeclarationCount(); i++) {
+        if (!getTypeParameterFromEnclosingDeclaration(i).isInitialized()) {
           memoizedIsInitialized = 0;
           return false;
         }
@@ -8349,6 +8482,9 @@ public final class ProtoBuf {
       }
       for (int i = 0; i < enumEntry_.size(); i++) {
         output.writeInt32NoTag(enumEntry_.get(i));
+      }
+      for (int i = 0; i < typeParameterFromEnclosingDeclaration_.size(); i++) {
+        output.writeMessage(13, typeParameterFromEnclosingDeclaration_.get(i));
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         output.writeMessage(30, typeTable_);
@@ -8435,6 +8571,10 @@ public final class ProtoBuf {
               .computeInt32SizeNoTag(dataSize);
         }
         enumEntryMemoizedSerializedSize = dataSize;
+      }
+      for (int i = 0; i < typeParameterFromEnclosingDeclaration_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(13, typeParameterFromEnclosingDeclaration_.get(i));
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
@@ -8553,8 +8693,10 @@ public final class ProtoBuf {
         bitField0_ = (bitField0_ & ~0x00000200);
         enumEntry_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000400);
-        typeTable_ = org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance();
+        typeParameterFromEnclosingDeclaration_ = java.util.Collections.emptyList();
         bitField0_ = (bitField0_ & ~0x00000800);
+        typeTable_ = org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance();
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 
@@ -8630,7 +8772,12 @@ public final class ProtoBuf {
           bitField0_ = (bitField0_ & ~0x00000400);
         }
         result.enumEntry_ = enumEntry_;
-        if (((from_bitField0_ & 0x00000800) == 0x00000800)) {
+        if (((bitField0_ & 0x00000800) == 0x00000800)) {
+          typeParameterFromEnclosingDeclaration_ = java.util.Collections.unmodifiableList(typeParameterFromEnclosingDeclaration_);
+          bitField0_ = (bitField0_ & ~0x00000800);
+        }
+        result.typeParameterFromEnclosingDeclaration_ = typeParameterFromEnclosingDeclaration_;
+        if (((from_bitField0_ & 0x00001000) == 0x00001000)) {
           to_bitField0_ |= 0x00000008;
         }
         result.typeTable_ = typeTable_;
@@ -8729,6 +8876,16 @@ public final class ProtoBuf {
           }
           
         }
+        if (!other.typeParameterFromEnclosingDeclaration_.isEmpty()) {
+          if (typeParameterFromEnclosingDeclaration_.isEmpty()) {
+            typeParameterFromEnclosingDeclaration_ = other.typeParameterFromEnclosingDeclaration_;
+            bitField0_ = (bitField0_ & ~0x00000800);
+          } else {
+            ensureTypeParameterFromEnclosingDeclarationIsMutable();
+            typeParameterFromEnclosingDeclaration_.addAll(other.typeParameterFromEnclosingDeclaration_);
+          }
+          
+        }
         if (other.hasTypeTable()) {
           mergeTypeTable(other.getTypeTable());
         }
@@ -8767,6 +8924,12 @@ public final class ProtoBuf {
         }
         for (int i = 0; i < getPropertyCount(); i++) {
           if (!getProperty(i).isInitialized()) {
+            
+            return false;
+          }
+        }
+        for (int i = 0; i < getTypeParameterFromEnclosingDeclarationCount(); i++) {
+          if (!getTypeParameterFromEnclosingDeclaration(i).isInitialized()) {
             
             return false;
           }
@@ -9765,13 +9928,234 @@ public final class ProtoBuf {
         return this;
       }
 
+      // repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;
+      private java.util.List<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> typeParameterFromEnclosingDeclaration_ =
+        java.util.Collections.emptyList();
+      private void ensureTypeParameterFromEnclosingDeclarationIsMutable() {
+        if (!((bitField0_ & 0x00000800) == 0x00000800)) {
+          typeParameterFromEnclosingDeclaration_ = new java.util.ArrayList<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter>(typeParameterFromEnclosingDeclaration_);
+          bitField0_ |= 0x00000800;
+         }
+      }
+
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public java.util.List<org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> getTypeParameterFromEnclosingDeclarationList() {
+        return java.util.Collections.unmodifiableList(typeParameterFromEnclosingDeclaration_);
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public int getTypeParameterFromEnclosingDeclarationCount() {
+        return typeParameterFromEnclosingDeclaration_.size();
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter getTypeParameterFromEnclosingDeclaration(int index) {
+        return typeParameterFromEnclosingDeclaration_.get(index);
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder setTypeParameterFromEnclosingDeclaration(
+          int index, org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.set(index, value);
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder setTypeParameterFromEnclosingDeclaration(
+          int index, org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter.Builder builderForValue) {
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.set(index, builderForValue.build());
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder addTypeParameterFromEnclosingDeclaration(org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.add(value);
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder addTypeParameterFromEnclosingDeclaration(
+          int index, org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.add(index, value);
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder addTypeParameterFromEnclosingDeclaration(
+          org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter.Builder builderForValue) {
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.add(builderForValue.build());
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder addTypeParameterFromEnclosingDeclaration(
+          int index, org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter.Builder builderForValue) {
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.add(index, builderForValue.build());
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder addAllTypeParameterFromEnclosingDeclaration(
+          java.lang.Iterable<? extends org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter> values) {
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        super.addAll(values, typeParameterFromEnclosingDeclaration_);
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder clearTypeParameterFromEnclosingDeclaration() {
+        typeParameterFromEnclosingDeclaration_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000800);
+
+        return this;
+      }
+      /**
+       * <code>repeated .org.jetbrains.kotlin.serialization.TypeParameter type_parameter_from_enclosing_declaration = 13;</code>
+       *
+       * <pre>
+       * This is probably a temporary solution for the problem that currently
+       * there is no easy way to retrive enclosing function of local class.
+       * But some types of local class still could refer to type parameters
+       * of this function or type parameters of containing declaration of this function, etc.
+       * So we just create copies of these type parameters in case of local classes.
+       * </pre>
+       */
+      public Builder removeTypeParameterFromEnclosingDeclaration(int index) {
+        ensureTypeParameterFromEnclosingDeclarationIsMutable();
+        typeParameterFromEnclosingDeclaration_.remove(index);
+
+        return this;
+      }
+
       // optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;
       private org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable typeTable_ = org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance();
       /**
        * <code>optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;</code>
        */
       public boolean hasTypeTable() {
-        return ((bitField0_ & 0x00000800) == 0x00000800);
+        return ((bitField0_ & 0x00001000) == 0x00001000);
       }
       /**
        * <code>optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;</code>
@@ -9788,7 +10172,7 @@ public final class ProtoBuf {
         }
         typeTable_ = value;
 
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         return this;
       }
       /**
@@ -9798,14 +10182,14 @@ public final class ProtoBuf {
           org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.Builder builderForValue) {
         typeTable_ = builderForValue.build();
 
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         return this;
       }
       /**
        * <code>optional .org.jetbrains.kotlin.serialization.TypeTable type_table = 30;</code>
        */
       public Builder mergeTypeTable(org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable value) {
-        if (((bitField0_ & 0x00000800) == 0x00000800) &&
+        if (((bitField0_ & 0x00001000) == 0x00001000) &&
             typeTable_ != org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance()) {
           typeTable_ =
             org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.newBuilder(typeTable_).mergeFrom(value).buildPartial();
@@ -9813,7 +10197,7 @@ public final class ProtoBuf {
           typeTable_ = value;
         }
 
-        bitField0_ |= 0x00000800;
+        bitField0_ |= 0x00001000;
         return this;
       }
       /**
@@ -9822,7 +10206,7 @@ public final class ProtoBuf {
       public Builder clearTypeTable() {
         typeTable_ = org.jetbrains.kotlin.serialization.ProtoBuf.TypeTable.getDefaultInstance();
 
-        bitField0_ = (bitField0_ & ~0x00000800);
+        bitField0_ = (bitField0_ & ~0x00001000);
         return this;
       }
 

@@ -194,6 +194,13 @@ message Class {
 
   repeated int32 enum_entry = 12 [packed = true, (name_id_in_table) = true];
 
+  // This is probably a temporary solution for the problem that currently
+  // there is no easy way to retrive enclosing function of local class.
+  // But some types of local class still could refer to type parameters
+  // of this function or type parameters of containing declaration of this function, etc.
+  // So we just create copies of these type parameters in case of local classes.
+  repeated TypeParameter type_parameter_from_enclosing_declaration = 13;
+
   optional TypeTable type_table = 30;
 
   extensions 100 to 199;

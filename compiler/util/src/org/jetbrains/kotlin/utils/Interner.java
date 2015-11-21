@@ -72,4 +72,8 @@ public final class Interner<T> {
     public boolean isEmpty() {
         return interned.isEmpty() && (parent == null || parent.isEmpty());
     }
+
+    public int size() {
+        return firstIndex + interned.size();
+    }
 }

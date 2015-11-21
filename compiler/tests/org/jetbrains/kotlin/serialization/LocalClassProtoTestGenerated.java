@@ -47,6 +47,12 @@ public class LocalClassProtoTestGenerated extends AbstractLocalClassProtoTest {
         doTest(fileName);
     }
 
+    @TestMetadata("capturedTypeParameters.kt")
+    public void testCapturedTypeParameters() throws Exception {
+        String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/serialization/local/capturedTypeParameters.kt");
+        doTest(fileName);
+    }
+
     @TestMetadata("deepInnerChain.kt")
     public void testDeepInnerChain() throws Exception {
         String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/serialization/local/deepInnerChain.kt");

@@ -141,6 +141,8 @@ public class DescriptorSerializer {
             builder.addTypeParameter(typeParameter(typeParameterDescriptor));
         }
 
+        int typeParametersCountBeforeBodySerialization = typeParameters.size();
+
         if (!KotlinBuiltIns.isSpecialClassWithNoSupertypes(classDescriptor)) {
             // Special classes (Any, Nothing) have no supertypes
             for (KotlinType supertype : classDescriptor.getTypeConstructor().getSupertypes()) {
@@ -192,6 +194,12 @@ public class DescriptorSerializer {
         }
 
         extension.serializeClass(classDescriptor, builder);
+
+        for (TypeParameterDescriptor typeParameterDescriptor : typeParameters.getAllInternedObjects()) {
+            if (typeParameters.intern(typeParameterDescriptor) >= typeParametersCountBeforeBodySerialization) {
+                builder.addTypeParameterFromEnclosingDeclaration(typeParameter(typeParameterDescriptor));
+            }
+        }
 
         return builder;
     }

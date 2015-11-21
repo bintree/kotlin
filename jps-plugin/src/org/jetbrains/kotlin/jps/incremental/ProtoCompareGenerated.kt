@@ -96,6 +96,8 @@ open class ProtoCompareGenerated(public val oldNameResolver: NameResolver, publi
 
         if (!checkEqualsClassEnumEntry(old, new)) return false
 
+        if (!checkEqualsClassTypeParameterFromEnclosingDeclaration(old, new)) return false
+
         if (old.hasTypeTable() != new.hasTypeTable()) return false
         if (old.hasTypeTable()) {
             if (!checkEquals(old.typeTable, new.typeTable)) return false
@@ -121,6 +123,7 @@ open class ProtoCompareGenerated(public val oldNameResolver: NameResolver, publi
         FUNCTION_LIST,
         PROPERTY_LIST,
         ENUM_ENTRY_LIST,
+        TYPE_PARAMETER_FROM_ENCLOSING_DECLARATION_LIST,
         TYPE_TABLE,
         CLASS_ANNOTATION_LIST
     }
@@ -155,6 +158,8 @@ open class ProtoCompareGenerated(public val oldNameResolver: NameResolver, publi
         if (!checkEqualsClassProperty(old, new)) result.add(ProtoBufClassKind.PROPERTY_LIST)
 
         if (!checkEqualsClassEnumEntry(old, new)) result.add(ProtoBufClassKind.ENUM_ENTRY_LIST)
+
+        if (!checkEqualsClassTypeParameterFromEnclosingDeclaration(old, new)) result.add(ProtoBufClassKind.TYPE_PARAMETER_FROM_ENCLOSING_DECLARATION_LIST)
 
         if (old.hasTypeTable() != new.hasTypeTable()) result.add(ProtoBufClassKind.TYPE_TABLE)
         if (old.hasTypeTable()) {
@@ -669,6 +674,16 @@ open class ProtoCompareGenerated(public val oldNameResolver: NameResolver, publi
         return true
     }
 
+    open fun checkEqualsClassTypeParameterFromEnclosingDeclaration(old: ProtoBuf.Class, new: ProtoBuf.Class): Boolean {
+        if (old.typeParameterFromEnclosingDeclarationCount != new.typeParameterFromEnclosingDeclarationCount) return false
+
+        for(i in 0..old.typeParameterFromEnclosingDeclarationCount - 1) {
+            if (!checkEquals(old.getTypeParameterFromEnclosingDeclaration(i), new.getTypeParameterFromEnclosingDeclaration(i))) return false
+        }
+
+        return true
+    }
+
     open fun checkEqualsFunctionTypeParameter(old: ProtoBuf.Function, new: ProtoBuf.Function): Boolean {
         if (old.typeParameterCount != new.typeParameterCount) return false
 
@@ -861,6 +876,10 @@ public fun ProtoBuf.Class.hashCode(stringIndexes: (Int) -> Int, fqNameIndexes: (
 
     for(i in 0..enumEntryCount - 1) {
         hashCode = 31 * hashCode + stringIndexes(getEnumEntry(i))
+    }
+
+    for(i in 0..typeParameterFromEnclosingDeclarationCount - 1) {
+        hashCode = 31 * hashCode + getTypeParameterFromEnclosingDeclaration(i).hashCode(stringIndexes, fqNameIndexes)
     }
 
     if (hasTypeTable()) {
