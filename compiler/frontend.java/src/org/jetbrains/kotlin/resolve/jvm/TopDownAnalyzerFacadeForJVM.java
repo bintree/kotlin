@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.resolve.jvm;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.GlobalSearchScope;
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.analyzer.AnalysisResult;
@@ -78,6 +79,114 @@ public enum TopDownAnalyzerFacadeForJVM {
         return analyzeFilesWithJavaIntegration(
                 moduleContext, files, trace, TopDownAnalysisMode.TopLevelDeclarations, modules, incrementalCompilationComponents,
                 packagePartProvider);
+    }
+
+    @NotNull
+    public static ContainerForTopDownAnalyzerForJvm prepareContext(
+            @NotNull ModuleContext moduleContext,
+            @NotNull Collection<KtFile> files,
+            @NotNull BindingTrace trace,
+            @Nullable List<Module> modules,
+            @Nullable IncrementalCompilationComponents incrementalCompilationComponents,
+            @NotNull PackagePartProvider packagePartProvider
+    ) {
+
+        Project project = moduleContext.getProject();
+        List<KtFile> allFiles = JvmAnalyzerFacade.getAllFilesToAnalyze(project, null, files);
+
+        FileBasedDeclarationProviderFactory providerFactory =
+                new FileBasedDeclarationProviderFactory(moduleContext.getStorageManager(), allFiles);
+
+        LookupTracker lookupTracker =
+                incrementalCompilationComponents != null
+                ? incrementalCompilationComponents.getLookupTracker()
+                : LookupTracker.Companion.getDO_NOTHING();
+
+        List<TargetId> targetIds = null;
+        if (modules != null) {
+            targetIds = new ArrayList<TargetId>(modules.size());
+
+            for (Module module : modules) {
+                targetIds.add(TargetIdKt.TargetId(module));
+            }
+        }
+
+        packagePartProvider = IncrementalPackagePartProvider
+                .create(packagePartProvider, files, targetIds, incrementalCompilationComponents, moduleContext.getStorageManager());
+
+        return InjectionKt.createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory,
+                GlobalSearchScope.allScope(project),
+                lookupTracker,
+                packagePartProvider
+        );
+    }
+
+    @NotNull
+    public static List<PackageFragmentProvider> prepareProviders(
+            @NotNull ModuleContext moduleContext,
+            @NotNull Collection<KtFile> files,
+            @NotNull BindingTrace trace,
+            @Nullable List<Module> modules,
+            @Nullable IncrementalCompilationComponents incrementalCompilationComponents,
+            @NotNull PackagePartProvider packagePartProvider
+    ) {
+
+        Project project = moduleContext.getProject();
+        List<KtFile> allFiles = JvmAnalyzerFacade.getAllFilesToAnalyze(project, null, files);
+
+        FileBasedDeclarationProviderFactory providerFactory =
+                new FileBasedDeclarationProviderFactory(moduleContext.getStorageManager(), allFiles);
+
+        LookupTracker lookupTracker =
+                incrementalCompilationComponents != null ? incrementalCompilationComponents.getLookupTracker() : LookupTracker.Companion.getDO_NOTHING();
+
+        List<TargetId> targetIds = null;
+        if (modules != null) {
+            targetIds = new ArrayList<TargetId>(modules.size());
+
+            for (Module module : modules) {
+                targetIds.add(TargetIdKt.TargetId(module));
+            }
+        }
+
+        packagePartProvider = IncrementalPackagePartProvider.create(packagePartProvider, files, targetIds, incrementalCompilationComponents, moduleContext.getStorageManager());
+
+        ContainerForTopDownAnalyzerForJvm container = InjectionKt.createContainerForTopDownAnalyzerForJvm(
+                moduleContext,
+                trace,
+                providerFactory,
+                GlobalSearchScope.allScope(project),
+                lookupTracker,
+                packagePartProvider
+        );
+
+        List<PackageFragmentProvider> additionalProviders = new ArrayList<PackageFragmentProvider>();
+
+        if (targetIds != null && incrementalCompilationComponents != null) {
+            for (TargetId targetId : targetIds) {
+                IncrementalCache incrementalCache = incrementalCompilationComponents.getIncrementalCache(targetId);
+
+                additionalProviders.add(
+                        new IncrementalPackageFragmentProvider(
+                                files, moduleContext.getModule(), moduleContext.getStorageManager(),
+                                container.getDeserializationComponentsForJava().getComponents(),
+                                incrementalCache, targetId
+                        )
+                );
+            }
+        }
+        additionalProviders.add(container.getJavaDescriptorResolver().getPackageFragmentProvider());
+
+        for (PackageFragmentProviderExtension extension : PackageFragmentProviderExtension.Companion.getInstances(project)) {
+            PackageFragmentProvider provider = extension.getPackageFragmentProvider(
+                    project, moduleContext.getModule(), moduleContext.getStorageManager(), trace, null);
+            if (provider != null) additionalProviders.add(provider);
+        }
+
+        return additionalProviders;
     }
 
     @NotNull
