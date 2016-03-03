@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.cli.jvm
 
 import com.google.common.base.Predicates.`in`
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.cli.common.CLICompiler
 import org.jetbrains.kotlin.cli.common.CLIConfigurationKeys
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -34,9 +35,12 @@ import org.jetbrains.kotlin.compiler.plugin.CliOptionProcessingException
 import org.jetbrains.kotlin.compiler.plugin.PluginCliOptionProcessingException
 import org.jetbrains.kotlin.compiler.plugin.cliPluginUsageString
 import org.jetbrains.kotlin.config.*
+import org.jetbrains.kotlin.context.MutableModuleContext
+import org.jetbrains.kotlin.descriptors.PackageFragmentProvider
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.load.kotlin.JvmMetadataVersion
 import org.jetbrains.kotlin.load.kotlin.incremental.components.IncrementalCompilationComponents
+import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
 import org.jetbrains.kotlin.script.StandardScriptDefinition
 import org.jetbrains.kotlin.util.PerformanceCounter
 import org.jetbrains.kotlin.utils.KotlinPaths
@@ -46,7 +50,41 @@ import java.io.File
 import java.lang.management.ManagementFactory
 import java.util.concurrent.TimeUnit
 
+var lastConfiguredEnv: KotlinCoreEnvironment? = null
+
+data class SetUpResult(
+        val pfp: List<PackageFragmentProvider>,
+        val kotlinCoreEnvironment: KotlinCoreEnvironment,
+        val jvmPackagePartProvider: JvmPackagePartProvider,
+        val module: MutableModuleContext)
+
 open class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
+
+    /**
+     * Useful main for derived command line tools
+     */
+    fun setUp(args: Array<String>): KotlinCoreEnvironment {
+        val rootDisposable = Disposer.newDisposable()
+        doExecute(parseArguments(System.err, MessageRenderer.PLAIN_FULL_PATHS, args)!!,
+                  Services.EMPTY, org.jetbrains.kotlin.cli.common.messages.MessageCollector.NONE, rootDisposable)
+        return lastConfiguredEnv!!
+    }
+
+//    fun setupResult(kotlinCoreEnvironment: KotlinCoreEnvironment): SetUpResult {
+//        val env = kotlinCoreEnvironment
+//        val module = TopDownAnalyzerFacadeForJVM.createContextWithSealedModule(env.project,
+//                                                                               env.configuration.get(JVMConfigurationKeys.MODULE_NAME)!!)
+//        val bindingTrace = CliLightClassGenerationSupport.NoScopeRecordCliBindingTrace()
+//        val jvmPackagePartProvider = JvmPackagePartProvider(env)
+//        val providers = TopDownAnalyzerFacadeForJVM.prepareProviders(module, env.getSourceFiles(),
+//                                                                     bindingTrace,
+//                                                                     env.configuration.get(JVMConfigurationKeys.MODULES),
+//                                                                     env.configuration.get(JVMConfigurationKeys.INCREMENTAL_COMPILATION_COMPONENTS),
+//                                                                     jvmPackagePartProvider)
+//
+//        return SetUpResult(providers, env, jvmPackagePartProvider, module)
+//    }
+
 
     override fun doExecute(arguments: K2JVMCompilerArguments, services: Services, messageCollector: MessageCollector, rootDisposable: Disposable): ExitCode {
         val messageSeverityCollector = MessageSeverityCollector(messageCollector)
@@ -167,7 +205,7 @@ open class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
                 compilerConfiguration.put(JVMConfigurationKeys.MODULE_XML_FILE_PATH, arguments.module)
 
                 environment = createCoreEnvironment(rootDisposable, compilerConfiguration)
-
+                lastConfiguredEnv = environment
                 if (messageSeverityCollector.anyReported(CompilerMessageSeverity.ERROR)) return COMPILATION_ERROR
 
                 KotlinToJVMBytecodeCompiler.compileModules(environment, configuration, moduleScript.modules, directory, jar, friendPaths, arguments.includeRuntime)

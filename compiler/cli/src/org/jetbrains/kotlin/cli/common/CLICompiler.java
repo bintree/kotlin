@@ -84,7 +84,7 @@ public abstract class CLICompiler<A extends CommonCompilerArguments> {
     }
 
     @Nullable
-    private A parseArguments(@NotNull PrintStream errStream, @NotNull MessageRenderer messageRenderer, @NotNull String[] args) {
+    public A parseArguments(@NotNull PrintStream errStream, @NotNull MessageRenderer messageRenderer, @NotNull String[] args) {
         try {
             A arguments = createArguments();
             arguments.freeArgs = Args.parse(arguments, args);
