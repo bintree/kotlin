@@ -873,7 +873,10 @@ public class FunctionCodegen {
             boolean isStubDeclarationWithDelegationToSuper
     ) {
         boolean isSpecialOrDelegationToSuper = isSpecialBridge || isStubDeclarationWithDelegationToSuper;
-        int flags = ACC_PUBLIC | ACC_BRIDGE | (!isSpecialOrDelegationToSuper ? ACC_SYNTHETIC : 0) | (isSpecialBridge ? ACC_FINAL : 0); // TODO.
+
+        boolean object = bridge.getReturnType().getSort() == Type.OBJECT && bridge.getReturnType().getInternalName().contains("Object");
+
+        int flags = ACC_PUBLIC |  (!isSpecialOrDelegationToSuper ? 0 : 0) | (isSpecialBridge && !object ? ACC_FINAL : 0); // TODO.
 
         MethodVisitor mv =
                 v.newMethod(JvmDeclarationOriginKt.Bridge(descriptor, origin), flags, bridge.getName(), bridge.getDescriptor(), null, null);

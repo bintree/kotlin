@@ -1,48 +1,109 @@
 // WITH_RUNTIME
-// FILE: JavaClass.java
+// FILE: A2.java
 
-public class JavaClass {
-
-    public static class C extends B {
-        public OutPair<String, Integer> foo() {
-            return super.foo();
-        }
-
-        public In<Object> bar() {
-            return super.bar();
-        }
-    }
-
-    public static String test() {
-        A a = new C();
-
-        if (!a.foo().getX().equals("OK")) return "fail 1";
-        if (!a.foo().getY().equals(123)) return "fail 2";
-
-        if (!a.bar().make("123").equals("123")) return "fail 3";
-
-        return "OK";
+public class A2 extends A1 {
+    public static void test() {
+        new A2().remove(1);
     }
 }
+
 
 // FILE: main.kt
 
-class OutPair<out X, out Y>(val x: X, val y: Y)
-class In<in Z> {
-    fun make(x: Z): String = x.toString()
+open class A0<E> : MutableList<E> {
+    override fun add(element: E): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun add(index: Int, element: E) {
+        throw UnsupportedOperationException()
+    }
+
+    override fun addAll(index: Int, elements: Collection<E>): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun addAll(elements: Collection<E>): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun clear() {
+        throw UnsupportedOperationException()
+    }
+
+    override fun listIterator(): MutableListIterator<E> {
+        throw UnsupportedOperationException()
+    }
+
+    override fun listIterator(index: Int): MutableListIterator<E> {
+        throw UnsupportedOperationException()
+    }
+
+    override fun remove(element: E): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun removeAll(elements: Collection<E>): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun removeAt(index: Int): E = "K" as E
+
+    override fun retainAll(elements: Collection<E>): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun set(index: Int, element: E): E {
+        throw UnsupportedOperationException()
+    }
+
+    override fun subList(fromIndex: Int, toIndex: Int): MutableList<E> {
+        throw UnsupportedOperationException()
+    }
+
+    override val size: Int
+        get() = throw UnsupportedOperationException()
+
+    override fun contains(element: E): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun containsAll(elements: Collection<E>): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun get(index: Int): E {
+        throw UnsupportedOperationException()
+    }
+
+    override fun indexOf(element: E): Int {
+        throw UnsupportedOperationException()
+    }
+
+    override fun isEmpty(): Boolean {
+        throw UnsupportedOperationException()
+    }
+
+    override fun lastIndexOf(element: E): Int {
+        throw UnsupportedOperationException()
+    }
+
+    override fun iterator(): MutableIterator<E> {
+        throw UnsupportedOperationException()
+    }
 }
 
-@JvmSuppressWildcards(suppress = false)
-interface A {
-    fun foo(): OutPair<CharSequence, Number>
-    fun bar(): In<String>
-}
+open class A1 : A0<String>() {
+    override fun remove(element: String): Boolean {
+        return super.remove(element)
+    }
 
-abstract class B : A {
-    override fun foo(): OutPair<String, Int> = OutPair("OK", 123)
-    override fun bar(): In<Any> = In()
+    override fun removeAt(index: Int): String {
+        return super.removeAt(index)
+    }
 }
 
 fun box(): String {
-    return JavaClass.test();
+    A2.test()
+    return "OK"
 }
