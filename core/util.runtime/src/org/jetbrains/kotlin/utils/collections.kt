@@ -84,6 +84,13 @@ fun <T> Collection<T>.toReadOnlyList(): List<T> =
             else -> ArrayList(this)
         }
 
+fun <T> List<T>.compactIfPossible(): List<T> =
+        when (size) {
+            0 -> emptyList()
+            1 -> listOf(first())
+            else -> this
+        }
+
 fun <T: Any> T?.singletonOrEmptyList(): List<T> =
         if (this != null) listOf(this) else emptyList()
 

@@ -85,10 +85,10 @@ abstract class DeserializedMemberScope protected constructor(
     ): Collection<D> {
         val protos = protosByName[name].orEmpty()
 
-        val descriptors = protos.mapTo(linkedSetOf(), factory)
+        val descriptors = protos.mapTo(arrayListOf(), factory)
 
         computeNonDeclared(descriptors)
-        return descriptors.toReadOnlyList()
+        return descriptors.compactIfPossible()
     }
 
     protected open fun computeNonDeclaredFunctions(name: Name, functions: MutableCollection<SimpleFunctionDescriptor>) {
@@ -127,7 +127,7 @@ abstract class DeserializedMemberScope protected constructor(
     ): Collection<DeclarationDescriptor> {
         //NOTE: descriptors should be in the same order they were serialized in
         // see MemberComparator
-        val result = LinkedHashSet<DeclarationDescriptor>(0)
+        val result = ArrayList<DeclarationDescriptor>(0)
 
         if (kindFilter.acceptsKinds(DescriptorKindFilter.SINGLETON_CLASSIFIERS_MASK)) {
             addEnumEntryDescriptors(result, nameFilter)
@@ -141,7 +141,7 @@ abstract class DeserializedMemberScope protected constructor(
             addClassifierDescriptors(result, nameFilter)
         }
 
-        return result.toReadOnlyList()
+        return result
     }
 
     private fun addFunctionsAndProperties(
