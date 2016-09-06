@@ -28,6 +28,9 @@ interface MemberScope : ResolutionScope {
     override fun getContributedVariables(name: Name, location: LookupLocation): Collection<PropertyDescriptor>
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor>
 
+    /**
+     * These methods may return a superset of an actual names' set
+     */
     fun getFunctionNames(): Set<Name>
     fun getPropertyNames(): Set<Name>
 
