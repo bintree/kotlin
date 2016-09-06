@@ -46,7 +46,6 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.addIfNotNull
-import org.jetbrains.kotlin.utils.alwaysTrue
 import org.jetbrains.kotlin.utils.toReadOnlyList
 import java.util.*
 
@@ -218,21 +217,22 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
 
     private val functionNamesLazy by c.storageManager.createLazyValue { computeFunctionNames(DescriptorKindFilter.FUNCTIONS, null) }
     private val propertyNamesLazy by c.storageManager.createLazyValue { computePropertyNames(DescriptorKindFilter.VARIABLES, null) }
-    override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> = functions(name)
 
     override fun getFunctionNames() = functionNamesLazy
     override fun getPropertyNames() = propertyNamesLazy
-    protected open fun computeFunctionNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?): Set<Name>
-            = memberIndex().getMethodNames(nameFilter ?: alwaysTrue())
 
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> {
         if (name !in getFunctionNames()) return emptyList()
         return functions(name)
     }
 
+    protected open fun computeFunctionNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?): Set<Name> =
+            memberIndex().getMethodNames()
+
     protected abstract fun computeNonDeclaredProperties(name: Name, result: MutableCollection<PropertyDescriptor>)
 
-    protected abstract fun computePropertyNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?): Set<Name>
+    protected open fun computePropertyNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?): Set<Name> =
+            memberIndex().getAllFieldNames()
 
     private val properties = c.storageManager.createMemoizedFunction {
         name: Name ->
