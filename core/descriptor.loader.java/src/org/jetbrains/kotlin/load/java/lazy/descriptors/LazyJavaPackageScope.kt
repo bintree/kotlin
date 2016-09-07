@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.storage.NullableLazyValue
 import org.jetbrains.kotlin.utils.alwaysTrue
@@ -43,14 +44,16 @@ class LazyJavaPackageScope(
         override val ownerDescriptor: LazyJavaPackageFragment
 ) : LazyJavaStaticScope(c) {
 
+    private val packageFqName by lazy(LazyThreadSafetyMode.PUBLICATION) { ownerDescriptor.fqName }
+
     // Null means that it's impossible to determine list of class names in package, i.e. in IDE where special finders exist
     // But for compiler though we can determine full list of class names by getting all class-file names in classpath and sources
     private val knownClassNamesInPackage: NullableLazyValue<Set<String>> = c.storageManager.createNullableLazyValue {
         c.components.finder.knownClassNamesInPackage(ownerDescriptor.fqName)
     }
 
-    private val classes = c.storageManager.createMemoizedFunctionWithNullableValues<FindClassRequest, ClassDescriptor> { request ->
-        val classId = ClassId(ownerDescriptor.fqName, request.name)
+    private val classes = c.storageManager.createMemoizedFunctionWithNullableValues<FindClassRequest, ClassDescriptor> classByRequest@{ request ->
+        val classId = ClassId(packageFqName, request.name)
 
         val kotlinBinaryClass =
                 // These branches should be semantically equal, but the first one could be faster
@@ -59,9 +62,11 @@ class LazyJavaPackageScope(
                 else
                     c.components.kotlinClassFinder.findKotlinClass(classId)
 
+        if (kotlinBinaryClass?.classId?.isNestedClass == true || kotlinBinaryClass?.classId?.isLocal == true) return@classByRequest null
+
         val kotlinResult = resolveKotlinBinaryClass(kotlinBinaryClass)
 
-        when (kotlinResult) {
+        val classDescriptor = when (kotlinResult) {
             is KotlinClassLookupResult.Found -> kotlinResult.descriptor
             is KotlinClassLookupResult.SyntheticClass -> null
             is KotlinClassLookupResult.NotFound -> {
@@ -82,6 +87,11 @@ class LazyJavaPackageScope(
                 }
             }
         }
+
+        if (classDescriptor?.containingDeclaration?.fqNameSafe == packageFqName)
+            classDescriptor
+        else
+            null
     }
 
     private sealed class KotlinClassLookupResult {
