@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.resolve.BindingTrace
-import org.jetbrains.kotlin.resolve.OverrideResolver
+import org.jetbrains.kotlin.resolve.OverridesChecker
 import org.jetbrains.kotlin.serialization.deserialization.BinaryVersion
 import org.jetbrains.kotlin.serialization.deserialization.ErrorReporter
 import org.jetbrains.kotlin.util.slicedMap.BasicWritableSlice
@@ -49,6 +49,6 @@ class TraceBasedErrorReporter(private val trace: BindingTrace) : ErrorReporter {
     }
 
     override fun reportCannotInferVisibility(descriptor: CallableMemberDescriptor) {
-        OverrideResolver.createCannotInferVisibilityReporter(trace).invoke(descriptor)
+        OverridesChecker.createCannotInferVisibilityReporter(trace).invoke(descriptor)
     }
 }

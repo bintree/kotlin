@@ -46,10 +46,10 @@ import static org.jetbrains.kotlin.diagnostics.Errors.*;
 import static org.jetbrains.kotlin.resolve.DescriptorUtils.classCanHaveAbstractMembers;
 import static org.jetbrains.kotlin.resolve.OverridingUtil.OverrideCompatibilityInfo.Result.OVERRIDABLE;
 
-public class OverrideResolver {
+public class OverridesChecker {
     private final BindingTrace trace;
 
-    public OverrideResolver(@NotNull BindingTrace trace) {
+    public OverridesChecker(@NotNull BindingTrace trace) {
         this.trace = trace;
     }
 

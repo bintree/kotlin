@@ -119,7 +119,7 @@ open class LazyClassMemberScope(
                 }
             }
         })
-        OverrideResolver.resolveUnknownVisibilities(result, trace)
+        OverridesChecker.resolveUnknownVisibilities(result, trace)
     }
 
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> {
@@ -220,7 +220,7 @@ open class LazyClassMemberScope(
     private fun resolveUnknownVisibilitiesForMembers(descriptors: Collection<CallableMemberDescriptor>) {
         for (descriptor in descriptors) {
             if (descriptor.kind != FAKE_OVERRIDE && descriptor.kind != DELEGATION) {
-                OverridingUtil.resolveUnknownVisibilityForMember(descriptor, OverrideResolver.createCannotInferVisibilityReporter(trace))
+                OverridingUtil.resolveUnknownVisibilityForMember(descriptor, OverridesChecker.createCannotInferVisibilityReporter(trace))
             }
             VarianceCheckerCore(trace.bindingContext, DiagnosticSink.DO_NOTHING).recordPrivateToThisIfNeeded(descriptor)
         }

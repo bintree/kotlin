@@ -36,7 +36,7 @@ import java.util.*
 class LazyTopDownAnalyzer(
         private val trace: BindingTrace,
         private val declarationResolver: DeclarationResolver,
-        private val overrideResolver: OverrideResolver,
+        private val overridesChecker: OverridesChecker,
         private val overloadResolver: OverloadResolver,
         private val varianceChecker: VarianceChecker,
         private val moduleDescriptor: ModuleDescriptor,
@@ -195,7 +195,7 @@ class LazyTopDownAnalyzer(
         declarationResolver.checkRedeclarationsInPackages(topLevelDescriptorProvider, topLevelFqNames)
         declarationResolver.checkRedeclarations(c)
 
-        overrideResolver.check(c)
+        overridesChecker.check(c)
 
         varianceChecker.check(c)
 
