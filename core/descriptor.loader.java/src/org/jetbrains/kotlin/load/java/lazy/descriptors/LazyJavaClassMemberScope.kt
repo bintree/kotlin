@@ -179,7 +179,7 @@ class LazyJavaClassMemberScope(
 
     private fun CallableDescriptor.doesOverride(superDescriptor: CallableDescriptor): Boolean {
         val commonOverridabilityResult =
-                OverridingUtil.DEFAULT.isOverridableByWithoutExternalConditions(superDescriptor, this, true).result
+                OverridingUtil.isOverridableByWithoutExternalConditions(superDescriptor, this, true).result
 
         return commonOverridabilityResult == OverridingUtil.OverrideCompatibilityInfo.Result.OVERRIDABLE &&
                     !JavaIncompatibilityRulesOverridabilityCondition.doesJavaOverrideHaveIncompatibleValueParameterKinds(

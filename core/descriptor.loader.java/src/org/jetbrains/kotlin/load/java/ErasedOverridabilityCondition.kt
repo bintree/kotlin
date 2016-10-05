@@ -48,7 +48,7 @@ class ErasedOverridabilityCondition : ExternalOverridabilityCondition {
         }
 
         val overridabilityResult =
-                OverridingUtil.DEFAULT.isOverridableByWithoutExternalConditions(erasedSuper, subDescriptor, false).result
+                OverridingUtil.isOverridableByWithoutExternalConditions(erasedSuper, subDescriptor, false).result
         return when (overridabilityResult) {
             OverridingUtil.OverrideCompatibilityInfo.Result.OVERRIDABLE -> Result.OVERRIDABLE
             else ->  Result.UNKNOWN

@@ -222,7 +222,7 @@ public class OverridingUtil {
     }
 
     @NotNull
-    public OverrideCompatibilityInfo isOverridableByWithoutExternalConditions(
+    public static OverrideCompatibilityInfo isOverridableByWithoutExternalConditions(
             @NotNull CallableDescriptor superDescriptor,
             @NotNull CallableDescriptor subDescriptor,
             boolean checkReturnType

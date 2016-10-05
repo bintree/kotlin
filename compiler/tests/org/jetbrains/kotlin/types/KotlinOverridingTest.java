@@ -155,7 +155,7 @@ public class KotlinOverridingTest extends KotlinTestWithEnvironment {
     private void assertOverridabilityRelation(String superFun, String subFun, boolean expectedIsError) {
         FunctionDescriptor a = makeFunction(superFun);
         FunctionDescriptor b = makeFunction(subFun);
-        OverridingUtil.OverrideCompatibilityInfo overridableWith = OverridingUtil.DEFAULT.isOverridableBy(a, b, null);
+        OverridingUtil.OverrideCompatibilityInfo overridableWith = OverridingUtil.isOverridableBy(a, b, null);
         assertEquals(
                 overridableWith.getDebugMessage(),
                 expectedIsError,
