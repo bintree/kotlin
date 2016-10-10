@@ -19,6 +19,7 @@ package org.jetbrains.kotlin.codegen.optimization.fixStack
 import com.intellij.util.containers.Stack
 import org.jetbrains.kotlin.codegen.inline.InlineCodegenUtil
 import org.jetbrains.kotlin.codegen.optimization.common.MethodAnalyzer
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame
 import org.jetbrains.kotlin.codegen.optimization.common.OptimizationBasicInterpreter
 import org.jetbrains.kotlin.codegen.pseudoInsns.PseudoInsn
 import org.jetbrains.org.objectweb.asm.Opcodes
@@ -26,7 +27,6 @@ import org.jetbrains.org.objectweb.asm.tree.AbstractInsnNode
 import org.jetbrains.org.objectweb.asm.tree.JumpInsnNode
 import org.jetbrains.org.objectweb.asm.tree.MethodNode
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.Interpreter
 
 internal class FixStackAnalyzer(
@@ -42,15 +42,15 @@ internal class FixStackAnalyzer(
         return !(insnNode is JumpInsnNode && context.breakContinueGotoNodes.contains(insnNode))
     }
 
-    override fun newFrame(nLocals: Int, nStack: Int): Frame<BasicValue> =
+    override fun newFrame(nLocals: Int, nStack: Int): MethodFrame<BasicValue> =
             FixStackFrame(nLocals, nStack)
 
     private fun indexOf(node: AbstractInsnNode) = method.instructions.indexOf(node)
 
-    inner class FixStackFrame(nLocals: Int, nStack: Int) : Frame<BasicValue>(nLocals, nStack) {
+    inner class FixStackFrame(nLocals: Int, nStack: Int) : MethodFrame<BasicValue>(nLocals, nStack) {
         val extraStack = Stack<BasicValue>()
 
-        override fun init(src: Frame<out BasicValue>): Frame<BasicValue> {
+        override fun init(src: MethodFrame<out BasicValue>): MethodFrame<BasicValue> {
             extraStack.clear()
             extraStack.addAll((src as FixStackFrame).extraStack)
             return super.init(src)
@@ -82,13 +82,13 @@ internal class FixStackAnalyzer(
 
         fun getStackContent(): List<BasicValue> {
             val savedStack = arrayListOf<BasicValue>()
-            IntRange(0, super.getStackSize() - 1).mapTo(savedStack) { super.getStack(it) }
+            IntRange(0, super.stackSize - 1).mapTo(savedStack) { super.getStack(it) }
             savedStack.addAll(extraStack)
             return savedStack
         }
 
         override fun push(value: BasicValue) {
-            if (super.getStackSize() < maxStackSize) {
+            if (super.stackSize < maxStackSize) {
                 super.push(value)
             }
             else {
@@ -111,7 +111,7 @@ internal class FixStackAnalyzer(
         }
 
         override fun getStack(i: Int): BasicValue {
-            if (i < super.getMaxStackSize()) {
+            if (i < super.maxStackSize) {
                 return super.getStack(i)
             }
             else {

@@ -24,6 +24,8 @@ import org.jetbrains.kotlin.codegen.ClosureCodegen;
 import org.jetbrains.kotlin.codegen.StackValue;
 import org.jetbrains.kotlin.codegen.intrinsics.IntrinsicMethods;
 import org.jetbrains.kotlin.codegen.optimization.FixStackWithLabelNormalizationMethodTransformer;
+import org.jetbrains.kotlin.codegen.optimization.common.MethodAnalyzer;
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame;
 import org.jetbrains.kotlin.codegen.state.KotlinTypeMapper;
 import org.jetbrains.kotlin.utils.SmartList;
 import org.jetbrains.kotlin.utils.SmartSet;
@@ -410,7 +412,7 @@ public class MethodInliner {
     ) {
         node = prepareNode(node, finallyDeepShift);
 
-        Frame<SourceValue>[] sources = analyzeMethodNodeBeforeInline(node);
+        MethodFrame<SourceValue>[] sources = analyzeMethodNodeBeforeInline(node);
         LocalReturnsNormalizer localReturnsNormalizer = LocalReturnsNormalizer.createFor(node, labelOwner, sources);
 
         Set<AbstractInsnNode> toDelete = SmartSet.create();
@@ -421,7 +423,7 @@ public class MethodInliner {
         int currentFinallyDeep = 0;
 
         while (cur != null) {
-            Frame<SourceValue> frame = sources[instructions.indexOf(cur)];
+            MethodFrame<SourceValue> frame = sources[instructions.indexOf(cur)];
 
             if (frame != null) {
                 if (ReifiedTypeInliner.isNeedClassReificationMarker(cur)) {
@@ -530,7 +532,7 @@ public class MethodInliner {
     }
 
     @NotNull
-    private Frame<SourceValue>[] analyzeMethodNodeBeforeInline(@NotNull MethodNode node) {
+    private MethodFrame<SourceValue>[] analyzeMethodNodeBeforeInline(@NotNull MethodNode node) {
         try {
             new FixStackWithLabelNormalizationMethodTransformer().transform("fake", node);
         }
@@ -538,14 +540,14 @@ public class MethodInliner {
             throw wrapException(e, node, "couldn't inline method call");
         }
 
-        Analyzer<SourceValue> analyzer = new Analyzer<SourceValue>(new SourceInterpreter()) {
+        MethodAnalyzer<SourceValue> analyzer = new MethodAnalyzer<SourceValue>("fake", node, new SourceInterpreter()) {
             @NotNull
             @Override
-            protected Frame<SourceValue> newFrame(int nLocals, int nStack) {
-                return new Frame<SourceValue>(nLocals, nStack) {
+            protected MethodFrame<SourceValue> newFrame(int nLocals, int nStack) {
+                return new MethodFrame<SourceValue>(nLocals, nStack) {
                     @Override
-                    public void execute(@NotNull AbstractInsnNode insn, Interpreter<SourceValue> interpreter) throws AnalyzerException {
-                        // This can be a void non-local return from a non-void method; Frame#execute would throw and do nothing else.
+                    public void execute(@NotNull AbstractInsnNode insn, @NotNull Interpreter<SourceValue> interpreter) {
+                        // This can be a void non-local return from a non-void method; MethodFrame#execute would throw and do nothing else.
                         if (insn.getOpcode() == Opcodes.RETURN) return;
                         super.execute(insn, interpreter);
                     }
@@ -553,12 +555,7 @@ public class MethodInliner {
             }
         };
 
-        try {
-            return analyzer.analyze("fake", node);
-        }
-        catch (AnalyzerException e) {
-            throw wrapException(e, node, "couldn't inline method call");
-        }
+        return analyzer.analyze();
     }
 
     private static boolean isEmptyTryInterval(@NotNull TryCatchBlockNode tryCatchBlockNode) {
@@ -795,12 +792,12 @@ public class MethodInliner {
         private static class LocalReturn {
             private final AbstractInsnNode returnInsn;
             private final AbstractInsnNode insertBeforeInsn;
-            private final Frame<SourceValue> frame;
+            private final MethodFrame<SourceValue> frame;
 
             public LocalReturn(
                     @NotNull AbstractInsnNode returnInsn,
                     @NotNull AbstractInsnNode insertBeforeInsn,
-                    @NotNull Frame<SourceValue> frame
+                    @NotNull MethodFrame<SourceValue> frame
             ) {
                 this.returnInsn = returnInsn;
                 this.insertBeforeInsn = insertBeforeInsn;
@@ -843,7 +840,7 @@ public class MethodInliner {
         private void addLocalReturnToTransform(
                 @NotNull AbstractInsnNode returnInsn,
                 @NotNull AbstractInsnNode insertBeforeInsn,
-                @NotNull Frame<SourceValue> sourceValueFrame
+                @NotNull MethodFrame<SourceValue> sourceValueFrame
         ) {
             assert InlineCodegenUtil.isReturnOpcode(returnInsn.getOpcode()) : "return instruction expected";
             assert returnOpcode < 0 || returnOpcode == returnInsn.getOpcode() :
@@ -873,14 +870,14 @@ public class MethodInliner {
         public static LocalReturnsNormalizer createFor(
                 @NotNull MethodNode methodNode,
                 @NotNull LabelOwner owner,
-                @NotNull Frame<SourceValue>[] frames
+                @NotNull MethodFrame<SourceValue>[] frames
         ) {
             LocalReturnsNormalizer result = new LocalReturnsNormalizer();
 
             AbstractInsnNode[] instructions = methodNode.instructions.toArray();
 
             for (int i = 0; i < instructions.length; ++i) {
-                Frame<SourceValue> frame = frames[i];
+                MethodFrame<SourceValue> frame = frames[i];
                 // Don't care about dead code, it will be eliminated
                 if (frame == null) continue;
 

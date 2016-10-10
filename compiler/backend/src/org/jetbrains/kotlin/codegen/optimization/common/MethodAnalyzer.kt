@@ -50,7 +50,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.tree.*
 import org.jetbrains.org.objectweb.asm.tree.analysis.AnalyzerException
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.Interpreter
 import org.jetbrains.org.objectweb.asm.tree.analysis.Value
 import java.util.*
@@ -68,7 +67,7 @@ open class MethodAnalyzer<V : Value>(
     val instructions: InsnList = method.instructions
     val nInsns: Int = instructions.size()
 
-    val frames: Array<Frame<V>?> = arrayOfNulls(nInsns)
+    val frames: Array<MethodFrame<V>?> = arrayOfNulls(nInsns)
 
     private val handlers: Array<MutableList<TryCatchBlockNode>?> = arrayOfNulls(nInsns)
     private val queued: BooleanArray = BooleanArray(nInsns)
@@ -77,9 +76,9 @@ open class MethodAnalyzer<V : Value>(
 
     protected open fun init(owner: String, m: MethodNode) {}
 
-    protected open fun newFrame(nLocals: Int, nStack: Int): Frame<V> = Frame(nLocals, nStack)
+    protected open fun newFrame(nLocals: Int, nStack: Int): MethodFrame<V> = MethodFrame(nLocals, nStack)
 
-    protected open fun newFrame(src: Frame<out V>): Frame<V> {
+    protected open fun newFrame(src: MethodFrame<out V>): MethodFrame<V> {
         val frame = newFrame(src.locals, src.maxStackSize)
         frame.init(src)
         return frame
@@ -92,7 +91,7 @@ open class MethodAnalyzer<V : Value>(
     protected open fun visitControlFlowExceptionEdge(insn: Int, tcb: TryCatchBlockNode): Boolean =
             visitControlFlowExceptionEdge(insn, instructions.indexOf(tcb.handler))
 
-    fun analyze(): Array<Frame<V>?> {
+    fun analyze(): Array<MethodFrame<V>?> {
         if (nInsns == 0) return frames
 
         checkAssertions()
@@ -156,7 +155,7 @@ open class MethodAnalyzer<V : Value>(
         return frames
     }
 
-    fun getFrame(insn: AbstractInsnNode): Frame<V>? =
+    fun getFrame(insn: AbstractInsnNode): MethodFrame<V>? =
             frames[instructions.indexOf(insn)]
 
     private fun checkAssertions() {
@@ -164,11 +163,11 @@ open class MethodAnalyzer<V : Value>(
             throw AssertionError("Subroutines are deprecated since Java 6")
     }
 
-    private fun visitOpInsn(current: Frame<V>, insn: Int) {
+    private fun visitOpInsn(current: MethodFrame<V>, insn: Int) {
         processControlFlowEdge(current, insn, insn + 1)
     }
 
-    private fun visitTableSwitchInsnNode(insnNode: TableSwitchInsnNode, current: Frame<V>, insn: Int) {
+    private fun visitTableSwitchInsnNode(insnNode: TableSwitchInsnNode, current: MethodFrame<V>, insn: Int) {
         var jump = instructions.indexOf(insnNode.dflt)
         processControlFlowEdge(current, insn, jump)
         // In most cases order of visiting switch labels should not matter
@@ -182,7 +181,7 @@ open class MethodAnalyzer<V : Value>(
         }
     }
 
-    private fun visitLookupSwitchInsnNode(insnNode: LookupSwitchInsnNode, current: Frame<V>, insn: Int) {
+    private fun visitLookupSwitchInsnNode(insnNode: LookupSwitchInsnNode, current: MethodFrame<V>, insn: Int) {
         var jump = instructions.indexOf(insnNode.dflt)
         processControlFlowEdge(current, insn, jump)
         for (label in insnNode.labels) {
@@ -191,7 +190,7 @@ open class MethodAnalyzer<V : Value>(
         }
     }
 
-    private fun visitJumpInsnNode(insnNode: JumpInsnNode, current: Frame<V>, insn: Int, insnOpcode: Int) {
+    private fun visitJumpInsnNode(insnNode: JumpInsnNode, current: MethodFrame<V>, insn: Int, insnOpcode: Int) {
         if (insnOpcode != Opcodes.GOTO && insnOpcode != Opcodes.JSR) {
             processControlFlowEdge(current, insn, insn + 1)
         }
@@ -199,17 +198,17 @@ open class MethodAnalyzer<V : Value>(
         processControlFlowEdge(current, insn, jump)
     }
 
-    private fun visitNopInsn(f: Frame<V>, insn: Int) {
+    private fun visitNopInsn(f: MethodFrame<V>, insn: Int) {
         processControlFlowEdge(f, insn, insn + 1)
     }
 
-    private fun processControlFlowEdge(current: Frame<V>, insn: Int, jump: Int) {
+    private fun processControlFlowEdge(current: MethodFrame<V>, insn: Int, jump: Int) {
         if (visitControlFlowEdge(insn, jump)) {
             mergeControlFlowEdge(jump, current)
         }
     }
 
-    private fun initControlFlowAnalysis(current: Frame<V>, m: MethodNode, owner: String) {
+    private fun initControlFlowAnalysis(current: MethodFrame<V>, m: MethodNode, owner: String) {
         current.setReturn(interpreter.newValue(Type.getReturnType(m.desc)))
         val args = Type.getArgumentTypes(m.desc)
         var local = 0
@@ -246,7 +245,7 @@ open class MethodAnalyzer<V : Value>(
         }
     }
 
-    private fun mergeControlFlowEdge(insn: Int, frame: Frame<V>) {
+    private fun mergeControlFlowEdge(insn: Int, frame: MethodFrame<V>) {
         val oldFrame = frames[insn]
         val changes: Boolean
 

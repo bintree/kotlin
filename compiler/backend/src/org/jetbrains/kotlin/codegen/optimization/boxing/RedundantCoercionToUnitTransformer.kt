@@ -16,6 +16,8 @@
 
 package org.jetbrains.kotlin.codegen.optimization.boxing
 
+import org.jetbrains.kotlin.codegen.optimization.common.MethodAnalyzer
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame
 import org.jetbrains.kotlin.codegen.optimization.common.isMeaningful
 import org.jetbrains.kotlin.codegen.optimization.fixStack.top
 import org.jetbrains.kotlin.codegen.optimization.removeNodeGetNext
@@ -23,8 +25,6 @@ import org.jetbrains.kotlin.codegen.optimization.replaceNodeGetNext
 import org.jetbrains.kotlin.codegen.optimization.transformer.MethodTransformer
 import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.tree.*
-import org.jetbrains.org.objectweb.asm.tree.analysis.Analyzer
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.SourceInterpreter
 import org.jetbrains.org.objectweb.asm.tree.analysis.SourceValue
 
@@ -59,7 +59,7 @@ class RedundantCoercionToUnitTransformer : MethodTransformer() {
         private val transformations = hashMapOf<AbstractInsnNode, Transformation>()
         private val removableNops = hashSetOf<InsnNode>()
 
-        private val frames: Array<out Frame<SourceValue>?> = analyzeMethodBody()
+        private val frames: Array<out MethodFrame<SourceValue>?> = analyzeMethodBody()
 
         fun transform() {
             computeTransformations()
@@ -69,8 +69,8 @@ class RedundantCoercionToUnitTransformer : MethodTransformer() {
             postprocessNops()
         }
 
-        private fun analyzeMethodBody(): Array<out Frame<SourceValue>?> =
-                Analyzer<SourceValue>(object : SourceInterpreter() {
+        private fun analyzeMethodBody(): Array<out MethodFrame<SourceValue>?> =
+                MethodAnalyzer<SourceValue>("fake", methodNode, object : SourceInterpreter() {
                     override fun naryOperation(insn: AbstractInsnNode, values: MutableList<out SourceValue>): SourceValue {
                         for (value in values) {
                             dontTouchInsns.addAll(value.insns)
@@ -102,7 +102,7 @@ class RedundantCoercionToUnitTransformer : MethodTransformer() {
                         dontTouchInsns.addAll(value3.insns)
                         return super.ternaryOperation(insn, value1, value2, value3)
                     }
-                }).analyze("fake", methodNode)
+                }).analyze()
 
 
         private fun computeTransformations() {

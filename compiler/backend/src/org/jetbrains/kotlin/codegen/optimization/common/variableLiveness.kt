@@ -23,7 +23,6 @@ import org.jetbrains.org.objectweb.asm.tree.IincInsnNode
 import org.jetbrains.org.objectweb.asm.tree.MethodNode
 import org.jetbrains.org.objectweb.asm.tree.VarInsnNode
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import java.util.*
 
 
@@ -73,7 +72,7 @@ private fun useVar(
         insn: AbstractInsnNode,
         node: MethodNode,
         // May be null in case of dead code
-        typeAnnotatedFrame: Frame<BasicValue>?
+        typeAnnotatedFrame: MethodFrame<BasicValue>?
 ) {
     val index = node.instructions.indexOf(insn)
     node.localVariables.filter {

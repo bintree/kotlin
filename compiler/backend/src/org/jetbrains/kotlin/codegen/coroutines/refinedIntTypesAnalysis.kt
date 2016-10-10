@@ -24,7 +24,6 @@ import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.Type
 import org.jetbrains.org.objectweb.asm.tree.*
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.SourceInterpreter
 import org.jetbrains.org.objectweb.asm.tree.analysis.SourceValue
 import java.util.*
@@ -34,7 +33,7 @@ import java.util.*
 // But it seems like Dalvik does not follow it, and spilling boolean value into an 'int' field fails with VerifyError on Android 4,
 // so this function calculates refined frames' markup.
 // Note that type of some values is only possible to determine by their usages (e.g. ICONST_1, BALOAD both may push boolean or byte on stack)
-internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String): Array<out Frame<out BasicValue>?> {
+internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String): Array<out MethodFrame<out BasicValue>?> {
     val insnList = methodNode.instructions
     val basicFrames = MethodTransformer.analyze(thisName, methodNode, OptimizationBasicInterpreter())
     val sourceValueFrames = MethodTransformer.analyze(thisName, methodNode, MySourceInterpreter())
@@ -58,7 +57,7 @@ internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String
         }
     }
 
-    fun saveExpectedTypeForArrayStore(insn: AbstractInsnNode, sourceValueFrame: Frame<SourceValue>) {
+    fun saveExpectedTypeForArrayStore(insn: AbstractInsnNode, sourceValueFrame: MethodFrame<SourceValue>) {
         val arrayStoreType =
                 when (insn.opcode) {
                     Opcodes.BASTORE -> Type.BYTE_TYPE
@@ -80,7 +79,7 @@ internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String
         saveExpectedType(sourceValueFrame.top(), expectedType)
     }
 
-    fun saveExpectedTypeForFieldOrMethod(insn: AbstractInsnNode, sourceValueFrame: Frame<SourceValue>) {
+    fun saveExpectedTypeForFieldOrMethod(insn: AbstractInsnNode, sourceValueFrame: MethodFrame<SourceValue>) {
         when (insn.opcode) {
             Opcodes.PUTFIELD, Opcodes.PUTSTATIC ->
                 saveExpectedType(sourceValueFrame.top(), Type.getType((insn as FieldInsnNode).desc))
@@ -95,7 +94,7 @@ internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String
         }
     }
 
-    fun saveExpectedTypeForVarStore(insn: AbstractInsnNode, sourceValueFrame: Frame<SourceValue>) {
+    fun saveExpectedTypeForVarStore(insn: AbstractInsnNode, sourceValueFrame: MethodFrame<SourceValue>) {
         if (insn.isIntStore()) {
             val varIndex = (insn as VarInsnNode).`var`
             // Considering next insn is important because variable initializer is emitted just before
@@ -146,11 +145,14 @@ internal fun performRefinedTypeAnalysis(methodNode: MethodNode, thisName: String
 
     val refinedFrames = Array(basicFrames.size) {
         insnIndex ->
-        val current = Frame(basicFrames[insnIndex] ?: return@Array null)
+        val basicFrame = basicFrames[insnIndex] ?: return@Array null
+        val current = MethodFrame<BasicValue>(basicFrame.locals, basicFrame.maxStackSize).apply {
+            init(basicFrame)
+        }
 
         refinedVarFrames[insnIndex].expectedTypeByVarIndex.withIndex().filter { it.value != null }.forEach {
-            assert(current.getLocal(it.index)?.type == Type.INT_TYPE) {
-                "int type expected, but ${current.getLocal(it.index)?.type} was found in basic frames"
+            assert(current.getLocal(it.index).type == Type.INT_TYPE) {
+                "int type expected, but ${current.getLocal(it.index).type} was found in basic frames"
             }
 
             current.setLocal(it.index, BasicValue(it.value))

@@ -22,13 +22,13 @@ import com.intellij.openapi.util.Pair;
 import kotlin.collections.CollectionsKt;
 import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame;
 import org.jetbrains.kotlin.codegen.optimization.transformer.MethodTransformer;
 import org.jetbrains.org.objectweb.asm.Opcodes;
 import org.jetbrains.org.objectweb.asm.Type;
 import org.jetbrains.org.objectweb.asm.commons.InstructionAdapter;
 import org.jetbrains.org.objectweb.asm.tree.*;
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue;
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame;
 
 import java.util.*;
 
@@ -37,7 +37,7 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
     @Override
     public void transform(@NotNull String internalClassName, @NotNull MethodNode node) {
         RedundantBoxingInterpreter interpreter = new RedundantBoxingInterpreter(node.instructions);
-        Frame<BasicValue>[] frames = analyze(
+        MethodFrame<BasicValue>[] frames = analyze(
                 internalClassName, node, interpreter
         );
         interpretPopInstructionsForBoxedValues(interpreter, node, frames);
@@ -59,7 +59,7 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
     private static void interpretPopInstructionsForBoxedValues(
             @NotNull RedundantBoxingInterpreter interpreter,
             @NotNull MethodNode node,
-            @NotNull Frame<BasicValue>[] frames
+            @NotNull MethodFrame<BasicValue>[] frames
     ) {
         for (int i = 0; i < node.instructions.size(); i++) {
             AbstractInsnNode insn = node.instructions.get(i);
@@ -79,7 +79,7 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
     private static void removeValuesClashingWithVariables(
             @NotNull RedundantBoxedValuesCollection values,
             @NotNull MethodNode node,
-            @NotNull Frame<BasicValue>[] frames
+            @NotNull MethodFrame<BasicValue>[] frames
     ) {
         while (removeValuesClashingWithVariablesPass(values, node, frames)) {
             // do nothing
@@ -89,7 +89,7 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
     private static boolean removeValuesClashingWithVariablesPass(
             @NotNull RedundantBoxedValuesCollection values,
             @NotNull MethodNode node,
-            @NotNull Frame<BasicValue>[] frames
+            @NotNull MethodFrame<BasicValue>[] frames
     ) {
         boolean needToRepeat = false;
 
@@ -133,7 +133,7 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
         return needToRepeat;
     }
 
-    private static void adaptLocalVariableTableForBoxedValues(@NotNull MethodNode node, @NotNull Frame<BasicValue>[] frames) {
+    private static void adaptLocalVariableTableForBoxedValues(@NotNull MethodNode node, @NotNull MethodFrame<BasicValue>[] frames) {
         for (LocalVariableNode localVariableNode : node.localVariables) {
             if (Type.getType(localVariableNode.desc).getSort() != Type.OBJECT) {
                 continue;
@@ -150,19 +150,17 @@ public class RedundantBoxingMethodTransformer extends MethodTransformer {
     private static List<BasicValue> getValuesStoredOrLoadedToVariable(
             @NotNull LocalVariableNode localVariableNode,
             @NotNull MethodNode node,
-            @NotNull Frame<BasicValue>[] frames
+            @NotNull MethodFrame<BasicValue>[] frames
     ) {
         List<BasicValue> values = new ArrayList<BasicValue>();
         InsnList insnList = node.instructions;
         int from = insnList.indexOf(localVariableNode.start) + 1;
         int to = insnList.indexOf(localVariableNode.end) - 1;
 
-        Frame<BasicValue> frameForFromInstr = frames[from];
+        MethodFrame<BasicValue> frameForFromInstr = frames[from];
         if (frameForFromInstr != null) {
             BasicValue localVarValue = frameForFromInstr.getLocal(localVariableNode.index);
-            if (localVarValue != null) {
-                values.add(localVarValue);
-            }
+            values.add(localVarValue);
         }
 
         for (int i = from; i <= to; i++) {

@@ -16,16 +16,16 @@
 
 package org.jetbrains.kotlin.codegen.optimization.fixStack
 
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame
 import org.jetbrains.org.objectweb.asm.Opcodes
 import org.jetbrains.org.objectweb.asm.tree.*
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame
 import org.jetbrains.org.objectweb.asm.tree.analysis.Value
 
-fun <V : Value> Frame<V>.top(): V? =
+fun <V : Value> MethodFrame<V>.top(): V? =
         peek(0)
 
-fun <V : Value> Frame<V>.peek(offset: Int): V? =
+fun <V : Value> MethodFrame<V>.peek(offset: Int): V? =
         if (stackSize >= offset) getStack(stackSize - offset - 1) else null
 
 class SavedStackDescriptor(
@@ -115,7 +115,7 @@ fun replaceAlwaysTrueIfeqWithGoto(methodNode: MethodNode, node: AbstractInsnNode
     }
 }
 
-fun replaceMarkerWithPops(methodNode: MethodNode, node: AbstractInsnNode, expectedStackSize: Int, frame: Frame<BasicValue>) {
+fun replaceMarkerWithPops(methodNode: MethodNode, node: AbstractInsnNode, expectedStackSize: Int, frame: MethodFrame<BasicValue>) {
     with (methodNode.instructions) {
         while (frame.stackSize > expectedStackSize) {
             val top = frame.pop()

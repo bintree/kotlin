@@ -17,11 +17,11 @@
 package org.jetbrains.kotlin.codegen.optimization.boxing;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.kotlin.codegen.optimization.common.MethodFrame;
 import org.jetbrains.kotlin.codegen.optimization.transformer.MethodTransformer;
 import org.jetbrains.org.objectweb.asm.Opcodes;
 import org.jetbrains.org.objectweb.asm.tree.*;
 import org.jetbrains.org.objectweb.asm.tree.analysis.BasicValue;
-import org.jetbrains.org.objectweb.asm.tree.analysis.Frame;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +37,7 @@ public class RedundantNullCheckMethodTransformer extends MethodTransformer {
 
     private static boolean removeRedundantNullCheckPass(@NotNull String internalClassName, @NotNull MethodNode methodNode) {
         InsnList insnList = methodNode.instructions;
-        Frame<BasicValue>[] frames = analyze(
+        MethodFrame<BasicValue>[] frames = analyze(
                 internalClassName, methodNode,
                 new NullabilityInterpreter(insnList)
         );
@@ -45,7 +45,7 @@ public class RedundantNullCheckMethodTransformer extends MethodTransformer {
         List<AbstractInsnNode> insnsToOptimize = new ArrayList<AbstractInsnNode>();
 
         for (int i = 0; i < insnList.size(); i++) {
-            Frame<BasicValue> frame = frames[i];
+            MethodFrame<BasicValue> frame = frames[i];
             AbstractInsnNode insn = insnList.get(i);
 
             if ((insn.getOpcode() == Opcodes.IFNULL || insn.getOpcode() == Opcodes.IFNONNULL) &&
