@@ -89,7 +89,7 @@ class TowerResolver {
             if (scope is LexicalScope) {
                 if (!scope.kind.withLocalDescriptors) result.add(ScopeBasedTowerLevel(this, scope))
 
-                getImplicitReceiver(scope)?.let { result.add(ReceiverScopeTowerLevel(this, it)) }
+                getImplicitReceiver(scope)?.let { result.add(MemberScopeTowerLevel(this, it)) }
             }
             else {
                 result.add(ImportingScopeBasedTowerLevel(this, scope as ImportingScope))
@@ -113,14 +113,11 @@ class TowerResolver {
         // Lazy calculation
         var nonLocalLevels: Collection<ScopeTowerLevel>? = null
         val hidesMembersLevel = HidesMembersTowerLevel(this)
-        val syntheticLevel = SyntheticScopeBasedTowerLevel(this, syntheticScopes)
 
         // hides members extensions for explicit receiver
         TowerData.TowerLevel(hidesMembersLevel).process()?.let { return it }
         // possibly there is explicit member
         TowerData.Empty.process()?.let { return it }
-        // synthetic member for explicit receiver
-        TowerData.TowerLevel(syntheticLevel).process()?.let { return it }
 
         // local non-extensions or extension for explicit receiver
         for (localLevel in localLevels) {
@@ -140,10 +137,7 @@ class TowerResolver {
                     TowerData.BothTowerLevelAndImplicitReceiver(hidesMembersLevel, implicitReceiver).process()?.let { return it }
 
                     // members of implicit receiver or member extension for explicit receiver
-                    TowerData.TowerLevel(ReceiverScopeTowerLevel(this, implicitReceiver)).process()?.let { return it }
-
-                    // synthetic members
-                    TowerData.BothTowerLevelAndImplicitReceiver(syntheticLevel, implicitReceiver).process()?.let { return it }
+                    TowerData.TowerLevel(MemberScopeTowerLevel(this, implicitReceiver)).process()?.let { return it }
 
                     // invokeExtension on local variable
                     TowerData.OnlyImplicitReceiver(implicitReceiver).process()?.let { return it }

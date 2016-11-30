@@ -64,7 +64,7 @@ internal class ExplicitReceiverScopeTowerProcessor<D : CallableDescriptor, C: Ca
     }
 
     private fun resolveAsMember(): Collection<C> {
-        val members = ReceiverScopeTowerLevel(scopeTower, explicitReceiver)
+        val members = MemberScopeTowerLevel(scopeTower, explicitReceiver)
                 .collectCandidates(null).filter { !it.requiresExtensionReceiver }
         return members.map { candidateFactory.createCandidate(it, ExplicitReceiverKind.DISPATCH_RECEIVER, extensionReceiver = null) }
     }

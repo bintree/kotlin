@@ -25,7 +25,6 @@ import org.jetbrains.kotlin.descriptors.synthetic.SyntheticMemberDescriptor
 import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.load.java.sam.SingleAbstractMethodUtils
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.descriptorUtil.parentsWithSelf
 import org.jetbrains.kotlin.resolve.isHiddenInResolution
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
@@ -104,7 +103,7 @@ class SamAdapterFunctionsScope(
 
         companion object {
             fun create(sourceFunction: FunctionDescriptor): MyFunctionDescriptor {
-                val descriptor = MyFunctionDescriptor(DescriptorUtils.getContainingModule(sourceFunction),
+                val descriptor = MyFunctionDescriptor(sourceFunction,
                                                       null,
                                                       sourceFunction.annotations,
                                                       sourceFunction.name,
@@ -128,12 +127,12 @@ class SamAdapterFunctionsScope(
                 descriptor.toSourceFunctionTypeParameters = typeParameters.zip(sourceTypeParams).toMap()
 
                 val returnType = typeSubstitutor.safeSubstitute(sourceFunction.returnType!!, Variance.INVARIANT)
-                val receiverType = typeSubstitutor.safeSubstitute(ownerClass.defaultType, Variance.INVARIANT)
+                //val receiverType = typeSubstitutor.safeSubstitute(ownerClass.defaultType, Variance.INVARIANT)
                 val valueParameters = SingleAbstractMethodUtils.createValueParametersForSamAdapter(sourceFunction, descriptor, typeSubstitutor)
 
                 val visibility = syntheticExtensionVisibility(sourceFunction)
 
-                descriptor.initialize(receiverType, null, typeParameters, valueParameters, returnType,
+                descriptor.initialize(null, ownerClass.thisAsReceiverParameter, typeParameters, valueParameters, returnType,
                                       Modality.FINAL, visibility)
 
                 descriptor.isOperator = sourceFunction.isOperator

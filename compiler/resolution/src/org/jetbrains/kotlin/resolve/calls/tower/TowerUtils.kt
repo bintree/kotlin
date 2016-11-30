@@ -17,14 +17,10 @@
 package org.jetbrains.kotlin.resolve.calls.tower
 
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
-import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValueWithSmartCastInfo
 
 val ResolutionCandidateApplicability.isSuccess: Boolean
     get() = this <= ResolutionCandidateApplicability.RESOLVED_LOW_PRIORITY
-
-val CallableDescriptor.isSynthesized: Boolean
-    get() = (this is CallableMemberDescriptor && kind == CallableMemberDescriptor.Kind.SYNTHESIZED)
 
 val CandidateWithBoundDispatchReceiver<*>.requiresExtensionReceiver: Boolean
     get() = descriptor.extensionReceiverParameter != null

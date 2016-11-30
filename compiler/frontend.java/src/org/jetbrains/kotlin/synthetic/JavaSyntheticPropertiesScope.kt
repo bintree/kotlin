@@ -305,12 +305,11 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
                 descriptor.setMethod = setMethod
 
                 val classTypeParams = ownerClass.typeConstructor.parameters
-                val typeParameters = ArrayList<TypeParameterDescriptor>(classTypeParams.size)
-                val typeSubstitutor = DescriptorSubstitutor.substituteTypeParameters(classTypeParams, TypeSubstitution.EMPTY, descriptor, typeParameters)
+                val typeSubstitutor = DescriptorSubstitutor.substituteTypeParameters(classTypeParams, TypeSubstitution.EMPTY, descriptor, )
 
                 val propertyType = typeSubstitutor.safeSubstitute(type, Variance.INVARIANT)
                 val receiverType = typeSubstitutor.safeSubstitute(ownerClass.defaultType, Variance.INVARIANT)
-                descriptor.setType(propertyType, typeParameters, null, receiverType)
+                descriptor.setType(propertyType, emptyList(), null, receiverType)
 
                 val getter = PropertyGetterDescriptorImpl(descriptor,
                                                           getMethod.annotations,
