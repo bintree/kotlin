@@ -28,7 +28,6 @@ import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.incremental.record
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.SyntheticScope
 import org.jetbrains.kotlin.resolve.scopes.SyntheticScopes
@@ -292,7 +291,7 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
         companion object {
             fun create(ownerClass: ClassDescriptor, getMethod: FunctionDescriptor, setMethod: FunctionDescriptor?, name: Name, type: KotlinType): MyPropertyDescriptor {
                 val visibility = syntheticExtensionVisibility(getMethod)
-                val descriptor = MyPropertyDescriptor(DescriptorUtils.getContainingModule(ownerClass),
+                val descriptor = MyPropertyDescriptor(ownerClass,
                                                       null,
                                                       Annotations.EMPTY,
                                                       Modality.FINAL,
@@ -304,13 +303,7 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
                 descriptor.getMethod = getMethod
                 descriptor.setMethod = setMethod
 
-                val classTypeParams = ownerClass.typeConstructor.parameters
-                val typeParameters = ArrayList<TypeParameterDescriptor>(classTypeParams.size)
-                val typeSubstitutor = DescriptorSubstitutor.substituteTypeParameters(classTypeParams, TypeSubstitution.EMPTY, descriptor, typeParameters)
-
-                val propertyType = typeSubstitutor.safeSubstitute(type, Variance.INVARIANT)
-                val receiverType = typeSubstitutor.safeSubstitute(ownerClass.defaultType, Variance.INVARIANT)
-                descriptor.setType(propertyType, typeParameters, null, receiverType)
+                descriptor.setType(type, emptyList(), ownerClass.thisAsReceiverParameter, null as ReceiverParameterDescriptor?)
 
                 val getter = PropertyGetterDescriptorImpl(descriptor,
                                                           getMethod.annotations,
