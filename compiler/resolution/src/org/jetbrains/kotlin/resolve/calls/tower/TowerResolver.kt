@@ -57,9 +57,17 @@ interface CandidateFactoryProviderForInvoke<F : Candidate<FunctionDescriptor>, V
 }
 
 sealed class TowerData {
+    interface LevelContainer {
+        val level: ScopeTowerLevel
+    }
+
     object Empty : TowerData()
     class OnlyImplicitReceiver(val implicitReceiver: ReceiverValueWithSmartCastInfo): TowerData()
-    class TowerLevel(val level: ScopeTowerLevel) : TowerData()
+    class TowerLevel(override val level: ScopeTowerLevel) : TowerData(), LevelContainer
+    class MemberLevelFromImplicitReceiver(
+            override val level: ScopeTowerLevel,
+            val dispatchReceiver: ReceiverValueWithSmartCastInfo
+    ) : TowerData(), LevelContainer
     class BothTowerLevelAndImplicitReceiver(val level: ScopeTowerLevel, val implicitReceiver: ReceiverValueWithSmartCastInfo) : TowerData()
 }
 
@@ -89,7 +97,7 @@ class TowerResolver {
             if (scope is LexicalScope) {
                 if (!scope.kind.withLocalDescriptors) result.add(ScopeBasedTowerLevel(this, scope))
 
-                getImplicitReceiver(scope)?.let { result.add(ReceiverScopeTowerLevel(this, it)) }
+                getImplicitReceiver(scope)?.let { result.add(MemberScopeTowerLevel(this, it)) }
             }
             else {
                 result.add(ImportingScopeBasedTowerLevel(this, scope as ImportingScope))
@@ -113,14 +121,11 @@ class TowerResolver {
         // Lazy calculation
         var nonLocalLevels: Collection<ScopeTowerLevel>? = null
         val hidesMembersLevel = HidesMembersTowerLevel(this)
-        val syntheticLevel = SyntheticScopeBasedTowerLevel(this, syntheticScopes)
 
         // hides members extensions for explicit receiver
         TowerData.TowerLevel(hidesMembersLevel).process()?.let { return it }
         // possibly there is explicit member
         TowerData.Empty.process()?.let { return it }
-        // synthetic member for explicit receiver
-        TowerData.TowerLevel(syntheticLevel).process()?.let { return it }
 
         // local non-extensions or extension for explicit receiver
         for (localLevel in localLevels) {
@@ -140,10 +145,9 @@ class TowerResolver {
                     TowerData.BothTowerLevelAndImplicitReceiver(hidesMembersLevel, implicitReceiver).process()?.let { return it }
 
                     // members of implicit receiver or member extension for explicit receiver
-                    TowerData.TowerLevel(ReceiverScopeTowerLevel(this, implicitReceiver)).process()?.let { return it }
-
-                    // synthetic members
-                    TowerData.BothTowerLevelAndImplicitReceiver(syntheticLevel, implicitReceiver).process()?.let { return it }
+                    TowerData.MemberLevelFromImplicitReceiver(
+                            MemberScopeTowerLevel(this, implicitReceiver), implicitReceiver
+                    ).process()?.let { return it }
 
                     // invokeExtension on local variable
                     TowerData.OnlyImplicitReceiver(implicitReceiver).process()?.let { return it }

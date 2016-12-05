@@ -71,7 +71,7 @@ class OverloadingConflictResolver<C : Any>(
 
         val noEquivalentCalls = filterOutEquivalentCalls(fixedCandidates)
         val noOverrides = OverridingUtil.filterOverrides(noEquivalentCalls) { it.resultingDescriptor }
-        if (noOverrides.size == 1) {
+        if (noOverrides.size <= 1) {
             return noOverrides
         }
 
@@ -119,10 +119,7 @@ class OverloadingConflictResolver<C : Any>(
             checkArgumentsMode: CheckArgumentTypesMode,
             discriminateGenerics: Boolean,
             isDebuggerContext: Boolean
-    ): C? =
-            if (candidates.size <= 1)
-                candidates.firstOrNull()
-            else when (checkArgumentsMode) {
+    ): C? = when (checkArgumentsMode) {
                 CheckArgumentTypesMode.CHECK_CALLABLE_TYPE ->
                     uniquifyCandidatesSet(candidates).filter {
                         isDefinitelyMostSpecific(it, candidates) {

@@ -20,4 +20,4 @@ import j.*
 
 class K : Observable<String>({})
 
-class J : Observable<String>(null)
+class J : <!OVERLOAD_RESOLUTION_AMBIGUITY!>Observable<!><String>(null)

@@ -22,19 +22,17 @@ class B : A() {
         b.bar = b.bar + ""
 
         a.<!INVISIBLE_MEMBER!>foo<!>
-        // TODO: should be INVISIBLE_SETTER
-        a.bar = a.bar + ""
+        <!INVISIBLE_SETTER!>a.bar<!> = a.bar + ""
 
         if (a is B) {
             <!DEBUG_INFO_SMARTCAST!>a<!>.foo
-            <!DEBUG_INFO_SMARTCAST!>a<!>.bar = <!DEBUG_INFO_SMARTCAST!>a<!>.bar + ""
+            <!INVISIBLE_SETTER!>a.bar<!> = a.bar + ""
         }
 
         if (d.x is B) {
             d.x.abc // Ok
-            d.x.<!INVISIBLE_MEMBER!>foo<!>
-            // TODO: should be INVISIBLE_SETTER
-            d.x.bar = d.x.bar + ""
+            d.x.<!NONE_APPLICABLE!>foo<!>
+            <!INVISIBLE_SETTER!>d.x.bar<!> = d.x.bar + ""
         }
     }
 }

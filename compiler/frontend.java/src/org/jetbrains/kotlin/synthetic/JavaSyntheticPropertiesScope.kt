@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.incremental.record
 import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.DescriptorUtils
+import org.jetbrains.kotlin.resolve.calls.inference.wrapWithCapturingSubstitution
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.SyntheticScope
 import org.jetbrains.kotlin.resolve.scopes.SyntheticScopes
@@ -169,9 +169,9 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
 
     override fun getSyntheticExtensionProperties(receiverTypes: Collection<KotlinType>, name: Name, location: LookupLocation): Collection<PropertyDescriptor> {
         var result: SmartList<PropertyDescriptor>? = null
-        val processedTypes: MutableSet<TypeConstructor>? = if (receiverTypes.size > 1) HashSet<TypeConstructor>() else null
+        val processedTypes: MutableSet<KotlinType>? = if (receiverTypes.size > 1) mutableSetOf() else null
         for (type in receiverTypes) {
-            result = collectSyntheticPropertiesByName(result, type.constructor, name, processedTypes, location)
+            result = collectSyntheticPropertiesByName(result, type, name, processedTypes, location)
         }
         return when {
             result == null -> emptyList()
@@ -180,18 +180,32 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
         }
     }
 
-    private fun collectSyntheticPropertiesByName(result: SmartList<PropertyDescriptor>?, type: TypeConstructor, name: Name, processedTypes: MutableSet<TypeConstructor>?, location: LookupLocation): SmartList<PropertyDescriptor>? {
+    private fun collectSyntheticPropertiesByName(
+            result: SmartList<PropertyDescriptor>?,
+            type: KotlinType,
+            name: Name,
+            processedTypes: MutableSet<KotlinType>?,
+            location: LookupLocation
+    ): SmartList<PropertyDescriptor>? {
         if (processedTypes != null && !processedTypes.add(type)) return result
 
         @Suppress("NAME_SHADOWING")
         var result = result
 
-        val classifier = type.declarationDescriptor
+        val classifier = type.constructor.declarationDescriptor
         if (classifier is ClassDescriptor) {
-            result = result.add(getSyntheticPropertyAndRecordLookups(classifier, name, location))
+            result = result.add(
+                    getSyntheticPropertyAndRecordLookups(classifier, name, location)
+                            ?.substitute(
+                                    TypeConstructorSubstitution
+                                            .create(type)
+                                            .wrapWithCapturingSubstitution(needApproximation = true)
+                                            .buildSubstitutor()
+                            )
+            )
         }
         else {
-            type.supertypes.forEach { result = collectSyntheticPropertiesByName(result, it.constructor, name, processedTypes, location) }
+            type.constructor.supertypes.forEach { result = collectSyntheticPropertiesByName(result, it, name, processedTypes, location) }
         }
 
         return result
@@ -292,7 +306,7 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
         companion object {
             fun create(ownerClass: ClassDescriptor, getMethod: FunctionDescriptor, setMethod: FunctionDescriptor?, name: Name, type: KotlinType): MyPropertyDescriptor {
                 val visibility = syntheticExtensionVisibility(getMethod)
-                val descriptor = MyPropertyDescriptor(DescriptorUtils.getContainingModule(ownerClass),
+                val descriptor = MyPropertyDescriptor(ownerClass,
                                                       null,
                                                       Annotations.EMPTY,
                                                       Modality.FINAL,
@@ -304,13 +318,7 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
                 descriptor.getMethod = getMethod
                 descriptor.setMethod = setMethod
 
-                val classTypeParams = ownerClass.typeConstructor.parameters
-                val typeParameters = ArrayList<TypeParameterDescriptor>(classTypeParams.size)
-                val typeSubstitutor = DescriptorSubstitutor.substituteTypeParameters(classTypeParams, TypeSubstitution.EMPTY, descriptor, typeParameters)
-
-                val propertyType = typeSubstitutor.safeSubstitute(type, Variance.INVARIANT)
-                val receiverType = typeSubstitutor.safeSubstitute(ownerClass.defaultType, Variance.INVARIANT)
-                descriptor.setType(propertyType, typeParameters, null, receiverType)
+                descriptor.setType(type, emptyList(), ownerClass.thisAsReceiverParameter, null as ReceiverParameterDescriptor?)
 
                 val getter = PropertyGetterDescriptorImpl(descriptor,
                                                           getMethod.annotations,
