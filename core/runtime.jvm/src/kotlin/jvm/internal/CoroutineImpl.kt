@@ -20,8 +20,18 @@ import kotlin.coroutines.Continuation
 import kotlin.coroutines.ContinuationDispatcher
 import kotlin.coroutines.CoroutineIntrinsics
 
-abstract class CoroutineImpl : RestrictedCoroutineImpl, DispatchedContinuation<Any?> {
-    private val _dispatcher: ContinuationDispatcher?
+abstract class CoroutineImpl(
+        arity: Int,
+        @JvmField
+        protected var completion: Continuation<Any?>?
+) : DispatchedContinuation<Any?>, Lambda(arity), Continuation<Any?>  {
+
+    // label == -1 when coroutine cannot be started (it is just a factory object) or has already finished execution
+    // label == 0 in initial part of the coroutine
+    @JvmField
+    protected var label: Int = if (completion != null) 0 else -1
+
+    private val _dispatcher: ContinuationDispatcher? = (completion as? DispatchedContinuation<*>)?.dispatcher
 
     override val dispatcher: ContinuationDispatcher?
         get() = _dispatcher
@@ -33,27 +43,6 @@ abstract class CoroutineImpl : RestrictedCoroutineImpl, DispatchedContinuation<A
         }
 
         return facade_!!
-    }
-
-    // this constructor is used to create a continuation instance for coroutine
-    constructor(arity: Int, completion: Continuation<Any?>?) : super(arity, completion) {
-        _dispatcher = (completion as? DispatchedContinuation<*>)?.dispatcher
-    }
-}
-
-abstract class RestrictedCoroutineImpl : Lambda, Continuation<Any?> {
-    @JvmField
-    protected var completion: Continuation<Any?>?
-
-    // label == -1 when coroutine cannot be started (it is just a factory object) or has already finished execution
-    // label == 0 in initial part of the coroutine
-    @JvmField
-    protected var label: Int
-
-    // this constructor is used to create a continuation instance for coroutine
-    constructor(arity: Int, completion: Continuation<Any?>?) : super(arity) {
-        this.completion = completion
-        label = if (completion != null) 0 else -1
     }
 
     override fun resume(value: Any?) {
