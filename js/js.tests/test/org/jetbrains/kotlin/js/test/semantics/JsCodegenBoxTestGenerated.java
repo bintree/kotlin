@@ -5430,6 +5430,12 @@ public class JsCodegenBoxTestGenerated extends AbstractJsCodegenBoxTest {
             doTest(fileName);
         }
 
+        @TestMetadata("getSetOperators.kt")
+        public void testGetSetOperators() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/box/coroutines/getSetOperators.kt");
+            doTest(fileName);
+        }
+
         @TestMetadata("handleException.kt")
         public void testHandleException() throws Exception {
             String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/box/coroutines/handleException.kt");
