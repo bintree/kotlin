@@ -1,33 +1,15 @@
-// WITH_RUNTIME
+// FILE: JavaScriptParser.java
+public class JavaScriptParser<T extends JSPsiTypeParser> {}
+// FILE: JSPsiTypeParser.java
+public class JSPsiTypeParser<T extends JavaScriptParser> {}
 
-abstract class A {
-    abstract fun foo(): List<String>
-}
+// FILE: ES6Parser.java
 
-interface B {
-    fun foo(): ArrayList<String> = ArrayList(listOf("B"))
-}
+public class ES6Parser<T extends JSPsiTypeParser> extends JavaScriptParser<T> {}
 
-open class C : A(), B {
-    override fun foo(): ArrayList<String> = super<B>.foo()
-}
+// FILE: main.kt
 
-interface D {
-    fun foo(): Collection<String>
-}
-
-class E : D, C()
-
-fun box(): String {
-    val e = E()
-    var r = e.foo()[0]
-    val d: D = e
-    val c: C = e
-    val b: B = e
-    val a: A = e
-    r += d.foo().iterator().next()
-    r += c.foo()[0]
-    r += b.foo()[0]
-    r += a.foo()[0]
-    return if (r == "BBBBB") "OK" else "Fail: $r"
+fun createParser(): JavaScriptParser<*>? {
+    ES6Parser<JSPsiTypeParser<*>>()
+    return null
 }

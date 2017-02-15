@@ -101,7 +101,7 @@ class JavaTypeResolver(
         val lower = computeBound(lower = true) ?: return errorType()
         val upper = computeBound(lower = false) ?: return errorType()
 
-        return if (javaType.isRaw) {
+        return if (isRaw) {
             RawTypeImpl(lower, upper)
         }
         else {

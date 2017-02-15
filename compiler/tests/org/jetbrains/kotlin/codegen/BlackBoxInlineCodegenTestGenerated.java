@@ -1156,6 +1156,12 @@ public class BlackBoxInlineCodegenTestGenerated extends AbstractBlackBoxInlineCo
             String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/localFunInLambda/localFunInLambda.kt");
             doTest(fileName);
         }
+
+        @TestMetadata("localFunInLambdaCapturesAnotherFun.kt")
+        public void testLocalFunInLambdaCapturesAnotherFun() throws Exception {
+            String fileName = KotlinTestUtils.navigationMetadata("compiler/testData/codegen/boxInline/localFunInLambda/localFunInLambdaCapturesAnotherFun.kt");
+            doTest(fileName);
+        }
     }
 
     @TestMetadata("compiler/testData/codegen/boxInline/multifileClasses")
