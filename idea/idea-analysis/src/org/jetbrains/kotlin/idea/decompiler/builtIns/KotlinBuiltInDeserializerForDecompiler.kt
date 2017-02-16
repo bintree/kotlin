@@ -49,7 +49,7 @@ class KotlinBuiltInDeserializerForDecompiler(
                 storageManager, moduleDescriptor, DeserializationConfiguration.Default, BuiltInsClassDataFinder(proto, nameResolver),
                 AnnotationAndConstantLoaderImpl(moduleDescriptor, notFoundClasses, BuiltInSerializerProtocol), packageFragmentProvider,
                 ResolveEverythingToKotlinAnyLocalClassifierResolver(builtIns), LoggingErrorReporter(LOG),
-                LookupTracker.DO_NOTHING, FlexibleTypeDeserializer.ThrowException, emptyList(), notFoundClasses
+                LookupTracker.DO_NOTHING, TypeDeserializerExtension.Default, emptyList(), notFoundClasses
         )
     }
 

@@ -53,7 +53,7 @@ class MetadataPackageFragmentProvider(
                 LocalClassifierTypeSettings.Default,
                 ErrorReporter.DO_NOTHING,
                 LookupTracker.Companion.DO_NOTHING,
-                FlexibleTypeDeserializer.ThrowException,
+                TypeDeserializerExtension.Default,
                 emptyList(),
                 notFoundClasses, AdditionalClassPartsProvider.None, PlatformDependentDeclarationFilter.All
         )

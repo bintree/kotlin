@@ -67,7 +67,7 @@ class TypeDeserializer(
             val id = c.nameResolver.getString(proto.flexibleTypeCapabilitiesId)
             val lowerBound = simpleType(proto, additionalAnnotations)
             val upperBound = simpleType(proto.flexibleUpperBound(c.typeTable)!!, additionalAnnotations)
-            return c.components.flexibleTypeDeserializer.create(proto, id, lowerBound, upperBound)
+            return c.components.typeDeserializerExtension.createFlexibleType(proto, id, lowerBound, upperBound)
         }
 
         return simpleType(proto, additionalAnnotations)

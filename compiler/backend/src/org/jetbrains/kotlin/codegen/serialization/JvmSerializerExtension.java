@@ -25,7 +25,7 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.java.lazy.types.RawTypeImpl;
-import org.jetbrains.kotlin.load.kotlin.JavaFlexibleTypeDeserializer;
+import org.jetbrains.kotlin.load.kotlin.JavaTypeDeserializerExtension;
 import org.jetbrains.kotlin.load.kotlin.TypeSignatureMappingKt;
 import org.jetbrains.kotlin.name.ClassId;
 import org.jetbrains.kotlin.serialization.AnnotationSerializer;
@@ -89,7 +89,7 @@ public class JvmSerializerExtension extends SerializerExtension {
             @NotNull ProtoBuf.Type.Builder lowerProto,
             @NotNull ProtoBuf.Type.Builder upperProto
     ) {
-        lowerProto.setFlexibleTypeCapabilitiesId(getStringTable().getStringIndex(JavaFlexibleTypeDeserializer.INSTANCE.getId()));
+        lowerProto.setFlexibleTypeCapabilitiesId(getStringTable().getStringIndex(JavaTypeDeserializerExtension.INSTANCE.getId()));
 
         if (flexibleType instanceof RawTypeImpl) {
             lowerProto.setExtension(JvmProtoBuf.isRaw, true);

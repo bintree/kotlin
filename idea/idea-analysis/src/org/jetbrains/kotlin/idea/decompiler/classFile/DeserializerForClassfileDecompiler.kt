@@ -68,7 +68,7 @@ class DeserializerForClassfileDecompiler(
         deserializationComponents = DeserializationComponents(
                 storageManager, moduleDescriptor, DeserializationConfiguration.Default, classDataFinder, annotationAndConstantLoader,
                 packageFragmentProvider, ResolveEverythingToKotlinAnyLocalClassifierResolver(builtIns), LoggingErrorReporter(LOG),
-                LookupTracker.DO_NOTHING, JavaFlexibleTypeDeserializer, emptyList(), notFoundClasses
+                LookupTracker.DO_NOTHING, JavaTypeDeserializerExtension, emptyList(), notFoundClasses
         )
     }
 

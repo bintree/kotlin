@@ -43,7 +43,7 @@ class DeserializationComponentsForJava(
         val jvmBuiltIns = moduleDescriptor.builtIns as? JvmBuiltIns
         components = DeserializationComponents(
                 storageManager, moduleDescriptor, configuration, classDataFinder, annotationAndConstantLoader, packageFragmentProvider,
-                LocalClassifierTypeSettings.Default, errorReporter, lookupTracker, JavaFlexibleTypeDeserializer,
+                LocalClassifierTypeSettings.Default, errorReporter, lookupTracker, JavaTypeDeserializerExtension,
                 emptyList(), notFoundClasses,
                 additionalClassPartsProvider = jvmBuiltIns?.settings ?: AdditionalClassPartsProvider.None,
                 platformDependentDeclarationFilter = jvmBuiltIns?.settings ?: PlatformDependentDeclarationFilter.NoPlatformDependent

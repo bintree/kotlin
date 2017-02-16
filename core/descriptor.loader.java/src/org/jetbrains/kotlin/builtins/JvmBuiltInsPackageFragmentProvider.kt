@@ -43,7 +43,7 @@ class JvmBuiltInsPackageFragmentProvider(
                 LocalClassifierTypeSettings.Default,
                 ErrorReporter.DO_NOTHING,
                 LookupTracker.DO_NOTHING,
-                FlexibleTypeDeserializer.ThrowException,
+                TypeDeserializerExtension.ThrowException,
                 listOf(
                         BuiltInFictitiousFunctionClassFactory(storageManager, moduleDescriptor),
                         JvmBuiltInClassDescriptorFactory(storageManager, moduleDescriptor)

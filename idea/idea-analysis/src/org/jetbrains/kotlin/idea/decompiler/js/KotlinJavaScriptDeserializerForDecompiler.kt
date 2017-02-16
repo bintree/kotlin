@@ -29,7 +29,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.TargetPlatform
 import org.jetbrains.kotlin.serialization.deserialization.*
 import org.jetbrains.kotlin.serialization.deserialization.descriptors.DeserializedPackageMemberScope
-import org.jetbrains.kotlin.serialization.js.DynamicTypeDeserializer
+import org.jetbrains.kotlin.serialization.js.DynamicTypeDeserializerExtension
 import org.jetbrains.kotlin.serialization.js.JsProtoBuf
 import org.jetbrains.kotlin.serialization.js.JsSerializerProtocol
 import org.jetbrains.kotlin.serialization.js.KotlinJavascriptClassDataFinder
@@ -52,7 +52,7 @@ class KotlinJavaScriptDeserializerForDecompiler(
                 storageManager, moduleDescriptor, DeserializationConfiguration.Default, KotlinJavascriptClassDataFinder(proto, nameResolver),
                 AnnotationAndConstantLoaderImpl(moduleDescriptor, notFoundClasses, JsSerializerProtocol), packageFragmentProvider,
                 ResolveEverythingToKotlinAnyLocalClassifierResolver(builtIns), LoggingErrorReporter(LOG),
-                LookupTracker.DO_NOTHING, DynamicTypeDeserializer, emptyList(), notFoundClasses
+                LookupTracker.DO_NOTHING, DynamicTypeDeserializerExtension, emptyList(), notFoundClasses
         )
     }
 

@@ -53,7 +53,7 @@ fun createKotlinJavascriptPackageFragmentProvider(
             LocalClassifierTypeSettings.Default,
             ErrorReporter.DO_NOTHING,
             LookupTracker.DO_NOTHING,
-            DynamicTypeDeserializer,
+            DynamicTypeDeserializerExtension,
             emptyList(),
             notFoundClasses
     )

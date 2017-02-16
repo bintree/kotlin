@@ -19,8 +19,6 @@ package org.jetbrains.kotlin.idea.decompiler.stubBuilder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.stubs.StubElement
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.builtins.functions.FunctionClassDescriptor
-import org.jetbrains.kotlin.builtins.getFunctionalClassKind
 import org.jetbrains.kotlin.builtins.isBuiltinFunctionClass
 import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -40,7 +38,7 @@ import org.jetbrains.kotlin.serialization.ProtoBuf.Type
 import org.jetbrains.kotlin.serialization.ProtoBuf.Type.Argument.Projection
 import org.jetbrains.kotlin.serialization.ProtoBuf.TypeParameter.Variance
 import org.jetbrains.kotlin.serialization.deserialization.*
-import org.jetbrains.kotlin.serialization.js.DynamicTypeDeserializer
+import org.jetbrains.kotlin.serialization.js.DynamicTypeDeserializerExtension
 import org.jetbrains.kotlin.utils.addToStdlib.singletonOrEmptyList
 import java.util.*
 
@@ -81,7 +79,7 @@ class TypeClsStubBuilder(private val c: ClsStubBuilderContext) {
         if (type.hasFlexibleTypeCapabilitiesId()) {
             val id = c.nameResolver.getString(type.flexibleTypeCapabilitiesId)
 
-            if (id == DynamicTypeDeserializer.id) {
+            if (id == DynamicTypeDeserializerExtension.id) {
                 KotlinPlaceHolderStubImpl<KtDynamicType>(nullableTypeParent(parent, type), KtStubElementTypes.DYNAMIC_TYPE)
                 return
             }

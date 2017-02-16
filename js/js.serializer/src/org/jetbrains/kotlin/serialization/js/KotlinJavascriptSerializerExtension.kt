@@ -36,7 +36,7 @@ class KotlinJavascriptSerializerExtension(
     override val stringTable = JavaScriptStringTable()
 
     override fun serializeFlexibleType(flexibleType: FlexibleType, lowerProto: ProtoBuf.Type.Builder, upperProto: ProtoBuf.Type.Builder) {
-        lowerProto.flexibleTypeCapabilitiesId = stringTable.getStringIndex(DynamicTypeDeserializer.id)
+        lowerProto.flexibleTypeCapabilitiesId = stringTable.getStringIndex(DynamicTypeDeserializerExtension.id)
     }
 
     override fun serializeClass(descriptor: ClassDescriptor, proto: ProtoBuf.Class.Builder) {

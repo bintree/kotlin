@@ -37,7 +37,7 @@ class DeserializationComponents(
         val localClassifierTypeSettings: LocalClassifierTypeSettings,
         val errorReporter: ErrorReporter,
         val lookupTracker: LookupTracker,
-        val flexibleTypeDeserializer: FlexibleTypeDeserializer,
+        val typeDeserializerExtension: TypeDeserializerExtension,
         val fictitiousClassDescriptorFactories: Iterable<ClassDescriptorFactory>,
         val notFoundClasses: NotFoundClasses,
         val additionalClassPartsProvider: AdditionalClassPartsProvider = AdditionalClassPartsProvider.None,

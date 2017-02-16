@@ -53,7 +53,7 @@ fun createBuiltInPackageFragmentProvider(
             LocalClassifierTypeSettings.Default,
             ErrorReporter.DO_NOTHING,
             LookupTracker.DO_NOTHING,
-            FlexibleTypeDeserializer.ThrowException,
+            TypeDeserializerExtension.Default,
             classDescriptorFactories,
             notFoundClasses,
             additionalClassPartsProvider = additionalClassPartsProvider,
