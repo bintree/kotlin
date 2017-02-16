@@ -18,23 +18,17 @@ package org.jetbrains.kotlin.load.java.typeEnhancement
 
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
 import org.jetbrains.kotlin.descriptors.ClassifierDescriptor
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
-import org.jetbrains.kotlin.descriptors.annotations.AnnotationWithTarget
 import org.jetbrains.kotlin.descriptors.annotations.Annotations
-import org.jetbrains.kotlin.descriptors.annotations.CompositeAnnotations
-import org.jetbrains.kotlin.load.java.JvmAnnotationNames
 import org.jetbrains.kotlin.load.java.lazy.types.RawTypeImpl
 import org.jetbrains.kotlin.load.java.typeEnhancement.MutabilityQualifier.MUTABLE
 import org.jetbrains.kotlin.load.java.typeEnhancement.MutabilityQualifier.READ_ONLY
 import org.jetbrains.kotlin.load.java.typeEnhancement.NullabilityQualifier.NOT_NULL
 import org.jetbrains.kotlin.load.java.typeEnhancement.NullabilityQualifier.NULLABLE
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.platform.JavaToKotlinClassMap
 import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.typeUtil.createProjection
 import org.jetbrains.kotlin.types.typeUtil.isTypeParameter
 import org.jetbrains.kotlin.utils.addToStdlib.check
-import org.jetbrains.kotlin.utils.toReadOnlyList
 
 // The index in the lambda is the position of the type component:
 // Example: for `A<B, C<D, E>>`, indices go as follows: `0 - A<...>, 1 - B, 2 - C<D, E>, 3 - D, 4 - E`,
@@ -42,8 +36,7 @@ import org.jetbrains.kotlin.utils.toReadOnlyList
 // For flexible types, both bounds are indexed in the same way: `(A<B>..C<D>)` gives `0 - (A<B>..C<D>), 1 - B and D`.
 fun KotlinType.enhance(qualifiers: (Int) -> JavaTypeQualifiers) = unwrap().enhancePossiblyFlexible(qualifiers, 0).typeIfChanged
 
-fun KotlinType.hasEnhancedNullability()
-        = annotations.findAnnotation(JvmAnnotationNames.ENHANCED_NULLABILITY_ANNOTATION) != null
+fun KotlinType.hasEnhancedNullability() = this is SimpleTypeWithEnhancedNullability
 
 private enum class TypeComponentPosition {
     FLEXIBLE_LOWER,
@@ -97,12 +90,12 @@ private fun SimpleType.enhanceInflexible(qualifiers: (Int) -> JavaTypeQualifiers
                         ?: return SimpleResult(this, 1, false)
 
     val effectiveQualifiers = qualifiers(index)
-    val (enhancedClassifier, enhancedMutabilityAnnotations) = originalClass.enhanceMutability(effectiveQualifiers, position)
+    val (enhancedClassifier, wasMutabilityActuallyEnhanced) = originalClass.enhanceMutability(effectiveQualifiers, position)
 
     val typeConstructor = enhancedClassifier.typeConstructor
 
     var globalArgIndex = index + 1
-    var wereChanges = enhancedMutabilityAnnotations != null
+    var wereChanges = wasMutabilityActuallyEnhanced
     val enhancedArguments = arguments.mapIndexed {
         localArgIndex, arg ->
         if (arg.isStarProjection) {
@@ -117,41 +110,48 @@ private fun SimpleType.enhanceInflexible(qualifiers: (Int) -> JavaTypeQualifiers
         }
     }
 
-    val (enhancedNullability, enhancedNullabilityAnnotations) = this.getEnhancedNullability(effectiveQualifiers, position)
-    wereChanges = wereChanges || enhancedNullabilityAnnotations != null
+    val (enhancedNullability, wasNullabilityActuallyEnhanced) = this.getEnhancedNullability(effectiveQualifiers, position)
+    wereChanges = wereChanges || wasNullabilityActuallyEnhanced
 
     val subtreeSize = globalArgIndex - index
     if (!wereChanges) return SimpleResult(this, subtreeSize, wereChanges = false)
 
-    val newAnnotations = listOf(
-            annotations,
-            enhancedMutabilityAnnotations,
-            enhancedNullabilityAnnotations
-    ).filterNotNull().compositeAnnotationsOrSingle()
-
-    val enhancedType = KotlinTypeFactory.simpleType(
-            newAnnotations,
-            typeConstructor,
-            enhancedArguments,
-            enhancedNullability
-    )
+    val enhancedType =
+            createEnhancedType(
+                    annotations, typeConstructor, enhancedArguments, enhancedNullability, wasNullabilityActuallyEnhanced
+            )
 
     val result = if (effectiveQualifiers.isNotNullTypeParameter) NotNullTypeParameter(enhancedType) else enhancedType
     return SimpleResult(result, subtreeSize, wereChanges = true)
 }
 
-private fun List<Annotations>.compositeAnnotationsOrSingle() = when (size) {
-    0 -> error("At least one Annotations object expected")
-    1 -> single()
-    else -> CompositeAnnotations(this.toReadOnlyList())
+private fun createEnhancedType(
+    annotations: Annotations,
+    typeConstructor: TypeConstructor,
+    arguments: List<TypeProjection>,
+    isNullable: Boolean,
+    isNullabilityEnhanced: Boolean
+): SimpleType {
+    val basicResult = KotlinTypeFactory.simpleType(annotations, typeConstructor, arguments, isNullable)
+    return if (isNullabilityEnhanced) SimpleTypeWithEnhancedNullability(basicResult) else basicResult
+}
+
+class SimpleTypeWithEnhancedNullability(override val delegate: SimpleType) : DelegatingSimpleType() {
+    override val isError: Boolean
+        get() = delegate.isError
+
+    override fun replaceAnnotations(newAnnotations: Annotations) =
+            SimpleTypeWithEnhancedNullability(delegate.replaceAnnotations(newAnnotations))
+
+    override fun makeNullableAsSpecified(newNullability: Boolean) =
+            if (newNullability == delegate.isMarkedNullable) this else delegate
 }
 
 private fun TypeComponentPosition.shouldEnhance() = this != TypeComponentPosition.INFLEXIBLE
 
-private data class EnhancementResult<out T>(val result: T, val enhancementAnnotations: Annotations?)
-private fun <T> T.noChange() = EnhancementResult(this, null)
-private fun <T> T.enhancedNullability() = EnhancementResult(this, ENHANCED_NULLABILITY_ANNOTATIONS)
-private fun <T> T.enhancedMutability() = EnhancementResult(this, ENHANCED_MUTABILITY_ANNOTATIONS)
+private data class EnhancementResult<out T>(val result: T, val wasActuallyEnhanced: Boolean)
+private fun <T> T.noChange() = EnhancementResult(this, false)
+private fun <T> T.enhanced() = EnhancementResult(this, true)
 
 private fun ClassifierDescriptor.enhanceMutability(qualifiers: JavaTypeQualifiers, position: TypeComponentPosition): EnhancementResult<ClassifierDescriptor> {
     if (!position.shouldEnhance()) return this.noChange()
@@ -162,12 +162,12 @@ private fun ClassifierDescriptor.enhanceMutability(qualifiers: JavaTypeQualifier
     when (qualifiers.mutability) {
         READ_ONLY -> {
             if (position == TypeComponentPosition.FLEXIBLE_LOWER && mapping.isMutable(this)) {
-                return mapping.convertMutableToReadOnly(this).enhancedMutability()
+                return mapping.convertMutableToReadOnly(this).enhanced()
             }
         }
         MUTABLE -> {
             if (position == TypeComponentPosition.FLEXIBLE_UPPER && mapping.isReadOnly(this) ) {
-                return mapping.convertReadOnlyToMutable(this).enhancedMutability()
+                return mapping.convertReadOnlyToMutable(this).enhanced()
             }
         }
     }
@@ -179,40 +179,10 @@ private fun KotlinType.getEnhancedNullability(qualifiers: JavaTypeQualifiers, po
     if (!position.shouldEnhance()) return this.isMarkedNullable.noChange()
 
     return when (qualifiers.nullability) {
-        NULLABLE -> true.enhancedNullability()
-        NOT_NULL -> false.enhancedNullability()
+        NULLABLE -> true.enhanced()
+        NOT_NULL -> false.enhanced()
         else -> this.isMarkedNullable.noChange()
     }
-}
-
-private val ENHANCED_NULLABILITY_ANNOTATIONS = EnhancedTypeAnnotations(JvmAnnotationNames.ENHANCED_NULLABILITY_ANNOTATION)
-private val ENHANCED_MUTABILITY_ANNOTATIONS = EnhancedTypeAnnotations(JvmAnnotationNames.ENHANCED_MUTABILITY_ANNOTATION)
-
-private class EnhancedTypeAnnotations(private val fqNameToMatch: FqName) : Annotations {
-    override fun isEmpty() = false
-
-    override fun findAnnotation(fqName: FqName) = when (fqName) {
-        fqNameToMatch -> EnhancedTypeAnnotationDescriptor
-        else -> null
-    }
-
-    override fun findExternalAnnotation(fqName: FqName) = null
-
-    override fun getAllAnnotations() = this.map { AnnotationWithTarget(it, null) }
-
-    override fun getUseSiteTargetedAnnotations() = emptyList<AnnotationWithTarget>()
-
-    // Note, that this class may break Annotations contract (!isEmpty && iterator.isEmpty())
-    // It's a hack that we need unless we have stable "user data" in JetType
-    override fun iterator(): Iterator<AnnotationDescriptor> = emptyList<AnnotationDescriptor>().iterator()
-}
-
-private object EnhancedTypeAnnotationDescriptor : AnnotationDescriptor {
-    private fun throwError(): Nothing = error("No methods should be called on this descriptor. Only its presence matters")
-    override fun getType() = throwError()
-    override fun getAllValueArguments() = throwError()
-    override fun getSource() = throwError()
-    override fun toString() = "[EnhancedType]"
 }
 
 internal class NotNullTypeParameter(override val delegate: SimpleType) : CustomTypeVariable, DelegatingSimpleType() {
