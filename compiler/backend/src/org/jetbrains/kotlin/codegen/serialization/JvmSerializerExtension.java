@@ -25,6 +25,7 @@ import org.jetbrains.kotlin.descriptors.*;
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor;
 import org.jetbrains.kotlin.load.java.JvmAbi;
 import org.jetbrains.kotlin.load.java.lazy.types.RawTypeImpl;
+import org.jetbrains.kotlin.load.java.typeEnhancement.TypeEnhancementKt;
 import org.jetbrains.kotlin.load.kotlin.JavaTypeDeserializerExtension;
 import org.jetbrains.kotlin.load.kotlin.TypeSignatureMappingKt;
 import org.jetbrains.kotlin.name.ClassId;
@@ -104,6 +105,10 @@ public class JvmSerializerExtension extends SerializerExtension {
         // TODO: don't store type annotations in our binary metadata on Java 8, use *TypeAnnotations attributes instead
         for (AnnotationDescriptor annotation : type.getAnnotations()) {
             proto.addExtension(JvmProtoBuf.typeAnnotation, annotationSerializer.serializeAnnotation(annotation));
+        }
+
+        if (TypeEnhancementKt.hasEnhancedNullability(type)) {
+            proto.setExtension(JvmProtoBuf.hasEnhancedNullability, true);
         }
     }
 

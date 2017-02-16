@@ -12,6 +12,7 @@ public final class DebugJvmProtoBuf {
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.propertySignature);
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.typeAnnotation);
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.isRaw);
+    registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.hasEnhancedNullability);
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.typeParameterAnnotation);
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.classModuleName);
     registry.add(org.jetbrains.kotlin.serialization.jvm.DebugJvmProtoBuf.packageModuleName);
@@ -4560,6 +4561,17 @@ public final class DebugJvmProtoBuf {
           .newFileScopedGeneratedExtension(
         java.lang.Boolean.class,
         null);
+  public static final int HAS_ENHANCED_NULLABILITY_FIELD_NUMBER = 102;
+  /**
+   * <code>extend .org.jetbrains.kotlin.serialization.Type { ... }</code>
+   */
+  public static final
+    org.jetbrains.kotlin.protobuf.GeneratedMessage.GeneratedExtension<
+      org.jetbrains.kotlin.serialization.DebugProtoBuf.Type,
+      java.lang.Boolean> hasEnhancedNullability = org.jetbrains.kotlin.protobuf.GeneratedMessage
+          .newFileScopedGeneratedExtension(
+        java.lang.Boolean.class,
+        null);
   public static final int TYPE_PARAMETER_ANNOTATION_FIELD_NUMBER = 100;
   /**
    * <code>extend .org.jetbrains.kotlin.serialization.TypeParameter { ... }</code>
@@ -4672,15 +4684,17 @@ public final class DebugJvmProtoBuf {
       ".jetbrains.kotlin.serialization.Type\030d \003" +
       "(\0132..org.jetbrains.kotlin.serialization.",
       "Annotation:8\n\006is_raw\022(.org.jetbrains.kot" +
-      "lin.serialization.Type\030e \001(\010:\204\001\n\031type_pa" +
-      "rameter_annotation\0221.org.jetbrains.kotli" +
-      "n.serialization.TypeParameter\030d \003(\0132..or" +
-      "g.jetbrains.kotlin.serialization.Annotat" +
-      "ion:J\n\021class_module_name\022).org.jetbrains" +
-      ".kotlin.serialization.Class\030e \001(\005B\004\230\265\030\001:" +
-      "N\n\023package_module_name\022+.org.jetbrains.k" +
-      "otlin.serialization.Package\030e \001(\005B\004\230\265\030\001B" +
-      "\022B\020DebugJvmProtoBuf"
+      "lin.serialization.Type\030e \001(\010:J\n\030has_enha" +
+      "nced_nullability\022(.org.jetbrains.kotlin." +
+      "serialization.Type\030f \001(\010:\204\001\n\031type_parame" +
+      "ter_annotation\0221.org.jetbrains.kotlin.se" +
+      "rialization.TypeParameter\030d \003(\0132..org.je" +
+      "tbrains.kotlin.serialization.Annotation:" +
+      "J\n\021class_module_name\022).org.jetbrains.kot" +
+      "lin.serialization.Class\030e \001(\005B\004\230\265\030\001:N\n\023p" +
+      "ackage_module_name\022+.org.jetbrains.kotli",
+      "n.serialization.Package\030e \001(\005B\004\230\265\030\001B\022B\020D" +
+      "ebugJvmProtoBuf"
     };
     org.jetbrains.kotlin.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new org.jetbrains.kotlin.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -4731,9 +4745,10 @@ public final class DebugJvmProtoBuf {
     propertySignature.internalInit(descriptor.getExtensions().get(2));
     typeAnnotation.internalInit(descriptor.getExtensions().get(3));
     isRaw.internalInit(descriptor.getExtensions().get(4));
-    typeParameterAnnotation.internalInit(descriptor.getExtensions().get(5));
-    classModuleName.internalInit(descriptor.getExtensions().get(6));
-    packageModuleName.internalInit(descriptor.getExtensions().get(7));
+    hasEnhancedNullability.internalInit(descriptor.getExtensions().get(5));
+    typeParameterAnnotation.internalInit(descriptor.getExtensions().get(6));
+    classModuleName.internalInit(descriptor.getExtensions().get(7));
+    packageModuleName.internalInit(descriptor.getExtensions().get(8));
     org.jetbrains.kotlin.protobuf.ExtensionRegistry registry =
         org.jetbrains.kotlin.protobuf.ExtensionRegistry.newInstance();
     registry.add(org.jetbrains.kotlin.serialization.DebugExtOptionsProtoBuf.stringIdInTable);

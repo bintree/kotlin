@@ -73,7 +73,10 @@ class TypeDeserializer(
         return simpleType(proto, additionalAnnotations)
     }
 
-    fun simpleType(proto: ProtoBuf.Type, additionalAnnotations: Annotations = Annotations.EMPTY): SimpleType {
+    fun simpleType(proto: ProtoBuf.Type, additionalAnnotations: Annotations = Annotations.EMPTY) =
+            c.components.typeDeserializerExtension.processSimpleType(proto, simpleTypeBasic(proto, additionalAnnotations))
+
+    private fun simpleTypeBasic(proto: ProtoBuf.Type, additionalAnnotations: Annotations): SimpleType {
         val localClassifierType = when {
             proto.hasClassName() -> computeLocalClassifierReplacementType(proto.className)
             proto.hasTypeAliasName() -> computeLocalClassifierReplacementType(proto.typeAliasName)

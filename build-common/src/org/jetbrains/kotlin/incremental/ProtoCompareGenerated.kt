@@ -509,6 +509,11 @@ open class ProtoCompareGenerated(val oldNameResolver: NameResolver, val newNameR
             if (old.getExtension(JvmProtoBuf.isRaw) != new.getExtension(JvmProtoBuf.isRaw)) return false
         }
 
+        if (old.hasExtension(JvmProtoBuf.hasEnhancedNullability) != new.hasExtension(JvmProtoBuf.hasEnhancedNullability)) return false
+        if (old.hasExtension(JvmProtoBuf.hasEnhancedNullability)) {
+            if (old.getExtension(JvmProtoBuf.hasEnhancedNullability) != new.getExtension(JvmProtoBuf.hasEnhancedNullability)) return false
+        }
+
         return true
     }
 
@@ -1395,6 +1400,10 @@ fun ProtoBuf.Type.hashCode(stringIndexes: (Int) -> Int, fqNameIndexes: (Int) -> 
 
     if (hasExtension(JvmProtoBuf.isRaw)) {
         hashCode = 31 * hashCode + getExtension(JvmProtoBuf.isRaw).hashCode()
+    }
+
+    if (hasExtension(JvmProtoBuf.hasEnhancedNullability)) {
+        hashCode = 31 * hashCode + getExtension(JvmProtoBuf.hasEnhancedNullability).hashCode()
     }
 
     return hashCode

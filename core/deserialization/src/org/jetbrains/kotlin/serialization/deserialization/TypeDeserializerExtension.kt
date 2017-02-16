@@ -23,6 +23,8 @@ import org.jetbrains.kotlin.types.SimpleType
 interface TypeDeserializerExtension {
     fun createFlexibleType(proto: ProtoBuf.Type, flexibleId: String, lowerBound: SimpleType, upperBound: SimpleType): KotlinType
 
+    fun processSimpleType(proto: ProtoBuf.Type, simpleType: SimpleType): SimpleType = simpleType
+
     object Default : TypeDeserializerExtension {
         override fun createFlexibleType(proto: ProtoBuf.Type, flexibleId: String, lowerBound: SimpleType, upperBound: SimpleType): KotlinType
                 = throw IllegalArgumentException("This method should not be used.")

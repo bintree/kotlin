@@ -12,6 +12,7 @@ public final class JvmProtoBuf {
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.propertySignature);
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.typeAnnotation);
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.isRaw);
+    registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.hasEnhancedNullability);
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.typeParameterAnnotation);
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.classModuleName);
     registry.add(org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf.packageModuleName);
@@ -3863,6 +3864,22 @@ public final class JvmProtoBuf {
         null,
         null,
         101,
+        org.jetbrains.kotlin.protobuf.WireFormat.FieldType.BOOL,
+        java.lang.Boolean.class);
+  public static final int HAS_ENHANCED_NULLABILITY_FIELD_NUMBER = 102;
+  /**
+   * <code>extend .org.jetbrains.kotlin.serialization.Type { ... }</code>
+   */
+  public static final
+    org.jetbrains.kotlin.protobuf.GeneratedMessageLite.GeneratedExtension<
+      org.jetbrains.kotlin.serialization.ProtoBuf.Type,
+      java.lang.Boolean> hasEnhancedNullability = org.jetbrains.kotlin.protobuf.GeneratedMessageLite
+          .newSingularGeneratedExtension(
+        org.jetbrains.kotlin.serialization.ProtoBuf.Type.getDefaultInstance(),
+        false,
+        null,
+        null,
+        102,
         org.jetbrains.kotlin.protobuf.WireFormat.FieldType.BOOL,
         java.lang.Boolean.class);
   public static final int TYPE_PARAMETER_ANNOTATION_FIELD_NUMBER = 100;

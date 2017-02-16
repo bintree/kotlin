@@ -103,6 +103,7 @@ extend Property {
 extend Type {
   repeated Annotation type_annotation = 100;
   optional bool is_raw = 101;
+  optional bool has_enhanced_nullability = 102;
 }
 
 extend TypeParameter {

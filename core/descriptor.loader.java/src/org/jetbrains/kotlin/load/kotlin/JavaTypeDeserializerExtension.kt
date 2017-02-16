@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.load.kotlin
 
 import org.jetbrains.kotlin.load.java.lazy.types.RawTypeImpl
+import org.jetbrains.kotlin.load.java.typeEnhancement.SimpleTypeWithEnhancedNullability
 import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.TypeDeserializerExtension
 import org.jetbrains.kotlin.serialization.jvm.JvmProtoBuf
@@ -34,5 +35,13 @@ object JavaTypeDeserializerExtension : TypeDeserializerExtension {
             return RawTypeImpl(lowerBound, upperBound)
         }
         return KotlinTypeFactory.flexibleType(lowerBound, upperBound)
+    }
+
+    override fun processSimpleType(proto: ProtoBuf.Type, simpleType: SimpleType): SimpleType {
+        if (proto.hasExtension(JvmProtoBuf.hasEnhancedNullability)) {
+            return SimpleTypeWithEnhancedNullability(simpleType)
+        }
+
+        return simpleType
     }
 }
