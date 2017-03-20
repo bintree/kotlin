@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="javaslang-2.1.0-alpha">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/javaslang-2.1.0-alpha.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/javaslang-2.1.0-alpha-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
