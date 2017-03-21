@@ -31,12 +31,15 @@ import org.jetbrains.kotlin.cli.jvm.index.JvmDependenciesIndex
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.jvm.KotlinCliJavaFileManager
-import org.jetbrains.kotlin.util.PerformanceCounter
+import org.jetbrains.kotlin.utils.javaBinaryClass
+import org.jetbrains.kotlin.utils.javaSourceCounter
+import org.jetbrains.kotlin.utils.perfCounter
+import org.jetbrains.kotlin.utils.perfCounter2
 import java.util.*
 import kotlin.properties.Delegates
 
 class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJavaFileManager(myPsiManager), KotlinCliJavaFileManager {
-    private val perfCounter = PerformanceCounter.create("Find Java class")
+
     private var index: JvmDependenciesIndex by Delegates.notNull()
     private val allScope = GlobalSearchScope.allScope(myPsiManager.project)
 
@@ -62,7 +65,7 @@ class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJ
     }
 
     override fun findClasses(qName: String, scope: GlobalSearchScope): Array<PsiClass> {
-        return perfCounter.time {
+        return perfCounter2.time {
             val classIdAsTopLevelClass = qName.toSafeTopLevelClassId() ?: return@time super.findClasses(qName, scope)
 
             val result = ArrayList<PsiClass>()
@@ -117,8 +120,22 @@ class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJ
             return null
         }
 
-        val file = myPsiManager.findFile(vFile) as? PsiClassOwner ?: return null
-        return findClassInPsiFile(classNameWithInnerClasses, file)
+        val block = block@{
+            val file = myPsiManager.findFile(vFile) as? PsiClassOwner ?: return@block null
+            findClassInPsiFile(classNameWithInnerClasses, file)
+        }
+
+        if (vFile.extension == "java") {
+            javaSourceCounter.time(block)
+        }
+        else if (vFile.extension == "class") {
+            javaBinaryClass.time(block)
+        }
+        else {
+            throw IllegalStateException("Unexpected extension: ${vFile.extension}")
+        }
+
+        return javaBinaryClass.time(block)
     }
 
     override fun knownClassNamesInPackage(packageFqName: FqName) = index.collectKnownClassNamesInPackage(packageFqName)

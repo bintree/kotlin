@@ -46,6 +46,8 @@ import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.getJavaMethods
+import org.jetbrains.kotlin.utils.getJavaProperties
 import java.util.*
 
 abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberScopeImpl() {
@@ -73,22 +75,24 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
 
     private val functions = c.storageManager.createMemoizedFunction<Name, Collection<SimpleFunctionDescriptor>> {
         name ->
-        val result = LinkedHashSet<SimpleFunctionDescriptor>()
+        getJavaMethods.time {
+            val result = LinkedHashSet<SimpleFunctionDescriptor>()
 
-        for (method in declaredMemberIndex().findMethodsByName(name)) {
-            val descriptor = resolveMethodToFunctionDescriptor(method)
-            if (!descriptor.isVisibleAsFunction()) continue
+            for (method in declaredMemberIndex().findMethodsByName(name)) {
+                val descriptor = resolveMethodToFunctionDescriptor(method)
+                if (!descriptor.isVisibleAsFunction()) continue
 
-            c.components.javaResolverCache.recordMethod(method, descriptor)
-            result.add(descriptor)
-            if (method.isStatic) {
-                result.addIfNotNull(c.components.samConversionResolver.resolveSamAdapter(descriptor))
+                c.components.javaResolverCache.recordMethod(method, descriptor)
+                result.add(descriptor)
+                if (method.isStatic) {
+                    result.addIfNotNull(c.components.samConversionResolver.resolveSamAdapter(descriptor))
+                }
             }
+
+            computeNonDeclaredFunctions(result, name)
+
+            enhanceSignatures(result).toList()
         }
-
-        computeNonDeclaredFunctions(result, name)
-
-        enhanceSignatures(result).toList()
     }
 
     open protected fun JavaMethodDescriptor.isVisibleAsFunction() = true
@@ -234,19 +238,21 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
 
     private val properties = c.storageManager.createMemoizedFunction {
         name: Name ->
-        val properties = ArrayList<PropertyDescriptor>()
+        getJavaProperties.time {
+            val properties = ArrayList<PropertyDescriptor>()
 
-        val field = declaredMemberIndex().findFieldByName(name)
-        if (field != null && !field.isEnumEntry) {
-            properties.add(resolveProperty(field))
+            val field = declaredMemberIndex().findFieldByName(name)
+            if (field != null && !field.isEnumEntry) {
+                properties.add(resolveProperty(field))
+            }
+
+            computeNonDeclaredProperties(name, properties)
+
+            if (DescriptorUtils.isAnnotationClass(ownerDescriptor))
+                properties.toList()
+            else
+                enhanceSignatures(properties).toList()
         }
-
-        computeNonDeclaredProperties(name, properties)
-
-        if (DescriptorUtils.isAnnotationClass(ownerDescriptor))
-            properties.toList()
-        else
-            enhanceSignatures(properties).toList()
     }
 
     private fun resolveProperty(field: JavaField): PropertyDescriptor {
