@@ -54,7 +54,7 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.progress.ProgressIndicatorAndCompilationCanceledStatus
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.jvm.TopDownAnalyzerFacadeForJVM
-import org.jetbrains.kotlin.util.PerformanceCounter
+import org.jetbrains.kotlin.utils.PerformanceCounter
 import org.jetbrains.kotlin.utils.KotlinPaths
 import org.jetbrains.kotlin.utils.PathUtil
 import org.jetbrains.kotlin.utils.newLinkedHashMapWithExpectedSize
@@ -127,7 +127,7 @@ object KotlinToJVMBytecodeCompiler {
         }
 
         val targetDescription = "in targets [" + chunk.joinToString { input -> input.getModuleName() + "-" + input.getModuleType() } + "]"
-        
+
         val result = repeatAnalysisIfNeeded(analyze(environment, targetDescription), environment, targetDescription)
         if (result == null || !result.shouldGenerateCode) return false
 
@@ -243,15 +243,15 @@ object KotlinToJVMBytecodeCompiler {
 
         return ExitCode.OK
     }
-    
+
     private fun repeatAnalysisIfNeeded(
-            result: AnalysisResult?, 
-            environment: KotlinCoreEnvironment, 
+            result: AnalysisResult?,
+            environment: KotlinCoreEnvironment,
             targetDescription: String?
     ): AnalysisResult? {
         if (result is AnalysisResult.RetryWithAdditionalJavaRoots) {
             val configuration = environment.configuration
-            
+
             val oldReadOnlyValue = configuration.isReadOnly
             configuration.isReadOnly = false
             configuration.addJavaSourceRoots(result.additionalJavaRoots)
@@ -272,7 +272,7 @@ object KotlinToJVMBytecodeCompiler {
             // Repeat analysis with additional Java roots (kapt generated sources)
             return analyze(environment, targetDescription)
         }
-        
+
         return result
     }
 
