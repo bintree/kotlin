@@ -44,10 +44,7 @@ import org.jetbrains.kotlin.storage.NotNullLazyValue
 import org.jetbrains.kotlin.storage.getValue
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
-import org.jetbrains.kotlin.utils.Printer
-import org.jetbrains.kotlin.utils.addIfNotNull
-import org.jetbrains.kotlin.utils.getJavaMethods
-import org.jetbrains.kotlin.utils.getJavaProperties
+import org.jetbrains.kotlin.utils.*
 import java.util.*
 
 abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberScopeImpl() {
@@ -77,21 +74,26 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
         name ->
         getJavaMethods.time {
             val result = LinkedHashSet<SimpleFunctionDescriptor>()
+            getJavaMethodsBasic.time {
+                for (method in declaredMemberIndex().findMethodsByName(name)) {
+                    val descriptor = resolveMethodToFunctionDescriptor(method)
+                    if (!descriptor.isVisibleAsFunction()) continue
 
-            for (method in declaredMemberIndex().findMethodsByName(name)) {
-                val descriptor = resolveMethodToFunctionDescriptor(method)
-                if (!descriptor.isVisibleAsFunction()) continue
-
-                c.components.javaResolverCache.recordMethod(method, descriptor)
-                result.add(descriptor)
-                if (method.isStatic) {
-                    result.addIfNotNull(c.components.samConversionResolver.resolveSamAdapter(descriptor))
+                    c.components.javaResolverCache.recordMethod(method, descriptor)
+                    result.add(descriptor)
+                    if (method.isStatic) {
+                        result.addIfNotNull(c.components.samConversionResolver.resolveSamAdapter(descriptor))
+                    }
                 }
             }
 
-            computeNonDeclaredFunctions(result, name)
+            getJavaMethodsNonDeclared.time {
+                computeNonDeclaredFunctions(result, name)
+            }
 
-            enhanceSignatures(result).toList()
+            getJavaMethodsEnhancements.time {
+                enhanceSignatures(result).toList()
+            }
         }
     }
 
@@ -121,12 +123,14 @@ abstract class LazyJavaScope(protected val c: LazyJavaResolverContext) : MemberS
 
         val c = c.child(functionDescriptorImpl, method)
 
-        val methodTypeParameters = method.typeParameters.map { p -> c.typeParameterResolver.resolveTypeParameter(p)!! }
-        val valueParameters = resolveValueParameters(c, functionDescriptorImpl, method.valueParameters)
+        val methodTypeParameters = getJavaMethodsTypeParameters.time { method.typeParameters.map { p -> c.typeParameterResolver.resolveTypeParameter(p)!! } }
+        val valueParameters = getJavaMethodsValueParameters.time { resolveValueParameters(c, functionDescriptorImpl, method.valueParameters) }
 
-        val returnType = computeMethodReturnType(method, annotations, c)
+        val returnType = getJavaMethodsReturnType.time { computeMethodReturnType(method, annotations, c) }
 
-        val effectiveSignature = resolveMethodSignature(method, methodTypeParameters, returnType, valueParameters.descriptors)
+        val effectiveSignature = getJavaMethodsResolvePropagatedSignature.time {
+            resolveMethodSignature(method, methodTypeParameters, returnType, valueParameters.descriptors)
+        }
 
         functionDescriptorImpl.initialize(
                 effectiveSignature.receiverType,
