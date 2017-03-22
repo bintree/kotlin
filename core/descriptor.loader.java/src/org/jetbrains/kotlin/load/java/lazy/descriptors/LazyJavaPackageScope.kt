@@ -32,10 +32,11 @@ import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.SpecialNames
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.storage.NullableLazyValue
 import org.jetbrains.kotlin.utils.alwaysTrue
+import org.jetbrains.kotlin.utils.getJavaMethodsSamConstructors
+import org.jetbrains.kotlin.utils.queryJavaClasses
 import java.util.*
 
 class LazyJavaPackageScope(
@@ -50,45 +51,47 @@ class LazyJavaPackageScope(
     }
 
     private val classes = c.storageManager.createMemoizedFunctionWithNullableValues<FindClassRequest, ClassDescriptor> classByRequest@{ request ->
-        val requestClassId = ClassId(ownerDescriptor.fqName, request.name)
+        queryJavaClasses.time {
+            val requestClassId = ClassId(ownerDescriptor.fqName, request.name)
 
-        val kotlinBinaryClass =
-                // These branches should be semantically equal, but the first one could be faster
-                if (request.javaClass != null)
-                    c.components.kotlinClassFinder.findKotlinClass(request.javaClass)
-                else
-                    c.components.kotlinClassFinder.findKotlinClass(requestClassId)
+            val kotlinBinaryClass =
+                    // These branches should be semantically equal, but the first one could be faster
+                    if (request.javaClass != null)
+                        c.components.kotlinClassFinder.findKotlinClass(request.javaClass)
+                    else
+                        c.components.kotlinClassFinder.findKotlinClass(requestClassId)
 
-        val classId = kotlinBinaryClass?.classId
-        // Nested/local classes can be found when running in CLI in case when request.name looks like 'Outer$Inner'
-        // It happens because KotlinClassFinder searches through a file-based index that does not differ classes containing $-sign and nested ones
-        if (classId != null && (classId.isNestedClass || classId.isLocal)) return@classByRequest null
+            val classId = kotlinBinaryClass?.classId
+            // Nested/local classes can be found when running in CLI in case when request.name looks like 'Outer$Inner'
+            // It happens because KotlinClassFinder searches through a file-based index that does not differ classes containing $-sign and nested ones
+            if (classId != null && (classId.isNestedClass || classId.isLocal)) return@time null
 
-        val kotlinResult = resolveKotlinBinaryClass(kotlinBinaryClass)
+            val kotlinResult = resolveKotlinBinaryClass(kotlinBinaryClass)
 
-        when (kotlinResult) {
-            is KotlinClassLookupResult.Found -> kotlinResult.descriptor
-            is KotlinClassLookupResult.SyntheticClass -> null
-            is KotlinClassLookupResult.NotFound -> {
-                val javaClass = request.javaClass ?: c.components.finder.findClass(requestClassId)
+            when (kotlinResult) {
+                is KotlinClassLookupResult.Found -> kotlinResult.descriptor
+                is KotlinClassLookupResult.SyntheticClass -> null
+                is KotlinClassLookupResult.NotFound -> {
+                    val javaClass = request.javaClass ?: c.components.finder.findClass(requestClassId)
 
-                if (javaClass?.lightClassOriginKind == LightClassOriginKind.BINARY) {
-                    throw IllegalStateException(
-                            "Couldn't find kotlin binary class for light class created by kotlin binary file\n" +
-                            "JavaClass: $javaClass\n" +
-                            "ClassId: $requestClassId\n" +
-                            "findKotlinClass(JavaClass) = ${c.components.kotlinClassFinder.findKotlinClass(javaClass)}\n" +
-                            "findKotlinClass(ClassId) = ${c.components.kotlinClassFinder.findKotlinClass(requestClassId)}\n"
-                    )
+                    if (javaClass?.lightClassOriginKind == LightClassOriginKind.BINARY) {
+                        throw IllegalStateException(
+                                "Couldn't find kotlin binary class for light class created by kotlin binary file\n" +
+                                "JavaClass: $javaClass\n" +
+                                "ClassId: $requestClassId\n" +
+                                "findKotlinClass(JavaClass) = ${c.components.kotlinClassFinder.findKotlinClass(javaClass)}\n" +
+                                "findKotlinClass(ClassId) = ${c.components.kotlinClassFinder.findKotlinClass(requestClassId)}\n"
+                        )
+                    }
+
+
+                    val javaClassFqName = javaClass?.fqName ?: return@time null
+                    assert(!javaClassFqName.isRoot && javaClassFqName.parent() == ownerDescriptor.fqName) {
+                        "Java class by request $requestClassId should be contained in package ${ownerDescriptor.fqName}, but it's fq-name: $javaClassFqName"
+                    }
+
+                    LazyJavaClassDescriptor(c, ownerDescriptor, javaClass)
                 }
-
-
-                val javaClassFqName = javaClass?.fqName ?: return@classByRequest null
-                assert(!javaClassFqName.isRoot && javaClassFqName.parent() == ownerDescriptor.fqName) {
-                    "Java class by request $requestClassId should be contained in package ${ownerDescriptor.fqName}, but it's fq-name: $javaClassFqName"
-                }
-
-                LazyJavaClassDescriptor(c, ownerDescriptor, javaClass)
             }
         }
     }
@@ -161,9 +164,11 @@ class LazyJavaPackageScope(
     }
 
     override fun computeNonDeclaredFunctions(result: MutableCollection<SimpleFunctionDescriptor>, name: Name) {
-        c.components.samConversionResolver.resolveSamConstructor(ownerDescriptor) {
-            getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
-        }?.let { result.add(it) }
+        getJavaMethodsSamConstructors.time {
+            c.components.samConversionResolver.resolveSamConstructor(ownerDescriptor) {
+                getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
+            }?.let { result.add(it) }
+        }
     }
 
     override fun computePropertyNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?) = emptySet<Name>()

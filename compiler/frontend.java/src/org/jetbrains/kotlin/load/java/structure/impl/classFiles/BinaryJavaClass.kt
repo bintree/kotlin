@@ -22,8 +22,8 @@ import gnu.trove.THashMap
 import org.jetbrains.kotlin.load.java.structure.*
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.util.readInnerClasses
 import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.readInnerClasses
 import org.jetbrains.org.objectweb.asm.*
 import java.text.CharacterIterator
 import java.text.StringCharacterIterator

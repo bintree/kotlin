@@ -57,10 +57,8 @@ import org.jetbrains.kotlin.storage.NotNullLazyValue
 import org.jetbrains.kotlin.types.KotlinType
 import org.jetbrains.kotlin.types.TypeUtils
 import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
-import org.jetbrains.kotlin.utils.SmartSet
-import org.jetbrains.kotlin.utils.addIfNotNull
+import org.jetbrains.kotlin.utils.*
 import org.jetbrains.kotlin.utils.addToStdlib.firstNotNullResult
-import org.jetbrains.kotlin.utils.ifEmpty
 import java.util.*
 
 class LazyJavaClassMemberScope(
@@ -244,34 +242,38 @@ class LazyJavaClassMemberScope(
         val functionsFromSupertypes = getFunctionsFromSupertypes(name)
 
         if (!name.sameAsRenamedInJvmBuiltin && !name.sameAsBuiltinMethodWithErasedValueParameters) {
-            // Simple fast path in case of name is not suspicious (i.e. name is not one of builtins that have different signature in Java)
-            addFunctionFromSupertypes(
-                    result, name,
-                    functionsFromSupertypes.filter { isVisibleAsFunctionInCurrentClass(it) },
-                    isSpecialBuiltinName = false)
+            getJavaMethodsResolveOverrides.time {
+                // Simple fast path in case of name is not suspicious (i.e. name is not one of builtins that have different signature in Java)
+                addFunctionFromSupertypes(
+                        result, name,
+                        functionsFromSupertypes.filter { isVisibleAsFunctionInCurrentClass(it) },
+                        isSpecialBuiltinName = false)
+            }
             return
         }
 
-        val specialBuiltinsFromSuperTypes = SmartSet.create<SimpleFunctionDescriptor>()
+        getJavaMethodsSpecialNames.time {
+            val specialBuiltinsFromSuperTypes = SmartSet.create<SimpleFunctionDescriptor>()
 
-        // Merge functions with same signatures
-        val mergedFunctionFromSuperTypes = resolveOverridesForNonStaticMembers(
-                name, functionsFromSupertypes, emptyList(), ownerDescriptor, ErrorReporter.DO_NOTHING)
+            // Merge functions with same signatures
+            val mergedFunctionFromSuperTypes = resolveOverridesForNonStaticMembers(
+                    name, functionsFromSupertypes, emptyList(), ownerDescriptor, ErrorReporter.DO_NOTHING)
 
-        // add declarations
-        addOverriddenBuiltinMethods(
-                name, result, mergedFunctionFromSuperTypes, result,
-                this::searchMethodsByNameWithoutBuiltinMagic)
+            // add declarations
+            addOverriddenBuiltinMethods(
+                    name, result, mergedFunctionFromSuperTypes, result,
+                    this::searchMethodsByNameWithoutBuiltinMagic)
 
-        // add from super types
-        addOverriddenBuiltinMethods(
-                name, result, mergedFunctionFromSuperTypes, specialBuiltinsFromSuperTypes,
-                this::searchMethodsInSupertypesWithoutBuiltinMagic)
+            // add from super types
+            addOverriddenBuiltinMethods(
+                    name, result, mergedFunctionFromSuperTypes, specialBuiltinsFromSuperTypes,
+                    this::searchMethodsInSupertypesWithoutBuiltinMagic)
 
-        val visibleFunctionsFromSupertypes =
-                functionsFromSupertypes.filter { isVisibleAsFunctionInCurrentClass(it) } + specialBuiltinsFromSuperTypes
+            val visibleFunctionsFromSupertypes =
+                    functionsFromSupertypes.filter { isVisibleAsFunctionInCurrentClass(it) } + specialBuiltinsFromSuperTypes
 
-        addFunctionFromSupertypes(result, name, visibleFunctionsFromSupertypes, isSpecialBuiltinName = true)
+            addFunctionFromSupertypes(result, name, visibleFunctionsFromSupertypes, isSpecialBuiltinName = true)
+        }
     }
 
     private fun addFunctionFromSupertypes(
@@ -368,10 +370,14 @@ class LazyJavaClassMemberScope(
         }
     }
 
-    private fun getFunctionsFromSupertypes(name: Name): Set<SimpleFunctionDescriptor> {
-        return ownerDescriptor.typeConstructor.supertypes.flatMapTo(LinkedHashSet()) {
-            it.memberScope.getContributedFunctions(name, NoLookupLocation.WHEN_GET_SUPER_MEMBERS)
+    private fun getFunctionsFromSupertypes(name: Name): Collection<SimpleFunctionDescriptor> {
+        val supertypes = getJavaMethodsComputingSupertypes.time { ownerDescriptor.typeConstructor.supertypes }
+        return getJavaMethodsGettingFunctionsFromSupertypes.time {
+            supertypes.flatMapTo(SmartList()) {
+                it.memberScope.getContributedFunctions(name, NoLookupLocation.WHEN_GET_SUPER_MEMBERS)
+            }
         }
+
     }
 
     override fun computeNonDeclaredProperties(name: Name, result: MutableCollection<PropertyDescriptor>) {

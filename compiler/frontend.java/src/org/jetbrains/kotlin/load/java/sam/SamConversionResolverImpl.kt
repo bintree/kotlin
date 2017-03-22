@@ -20,13 +20,14 @@ import org.jetbrains.kotlin.descriptors.ClassifierDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.load.java.components.SamConversionResolver
-import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaClassConstructorDescriptor
+import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.JavaMethodDescriptor
 import org.jetbrains.kotlin.load.java.descriptors.SamConstructorDescriptor
 import org.jetbrains.kotlin.load.java.lazy.descriptors.LazyJavaClassDescriptor
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlin.utils.isSamClass
 
 class SamConversionResolverImpl(val storageManager: StorageManager, val samWithReceiverResolver: SamWithReceiverResolver): SamConversionResolver {
     override fun resolveSamConstructor(constructorOwner: DeclarationDescriptor, classifier: () -> ClassifierDescriptor?): SamConstructorDescriptor? {
@@ -49,9 +50,11 @@ class SamConversionResolverImpl(val storageManager: StorageManager, val samWithR
 
     override fun resolveFunctionTypeIfSamInterface(classDescriptor: JavaClassDescriptor): SimpleType? {
         return functionTypesForSamInterfaces.computeIfAbsent(classDescriptor) {
-            val abstractMethod = SingleAbstractMethodUtils.getSingleAbstractMethodOrNull(classDescriptor) ?: return@computeIfAbsent null
-            val shouldConvertFirstParameterToDescriptor = samWithReceiverResolver.shouldConvertFirstSamParameterToReceiver(abstractMethod)
-            SingleAbstractMethodUtils.getFunctionTypeForAbstractMethod(abstractMethod, shouldConvertFirstParameterToDescriptor)
+            isSamClass.time {
+                val abstractMethod = SingleAbstractMethodUtils.getSingleAbstractMethodOrNull(classDescriptor) ?: return@time null
+                val shouldConvertFirstParameterToDescriptor = samWithReceiverResolver.shouldConvertFirstSamParameterToReceiver(abstractMethod)
+                SingleAbstractMethodUtils.getFunctionTypeForAbstractMethod(abstractMethod, shouldConvertFirstParameterToDescriptor)
+            }
         }
     }
 }

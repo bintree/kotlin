@@ -34,8 +34,9 @@ import org.jetbrains.kotlin.load.java.structure.impl.classFiles.SignatureParsing
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.jvm.KotlinCliJavaFileManager
-import org.jetbrains.kotlin.util.PerformanceCounter
-import org.jetbrains.kotlin.util.readTopLevelClasses
+import org.jetbrains.kotlin.utils.PerformanceCounter
+import org.jetbrains.kotlin.utils.javaSourceCounter
+import org.jetbrains.kotlin.utils.readTopLevelClasses
 import java.util.*
 import kotlin.properties.Delegates
 
@@ -195,10 +196,11 @@ class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJ
     private fun VirtualFile.findPsiClassInVirtualFile(
             classNameWithInnerClasses: ClassId
     ): PsiClass? {
-        return cache.getOrPut(classNameWithInnerClasses.asString()) {
+
+        return javaSourceCounter.time { cache.getOrPut(classNameWithInnerClasses.asString()) {
             val file = myPsiManager.findFile(this) as? PsiClassOwner ?: return@getOrPut null
             findClassInPsiFile(classNameWithInnerClasses.relativeClassName.asString(), file)
-        }
+        }}
     }
 
     override fun knownClassNamesInPackage(packageFqName: FqName): Set<String> {

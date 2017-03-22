@@ -40,7 +40,8 @@ import org.jetbrains.kotlin.load.java.JvmAbi
 import org.jetbrains.kotlin.load.kotlin.incremental.components.IncrementalCompilationComponents
 import org.jetbrains.kotlin.script.KotlinScriptDefinitionFromAnnotatedTemplate
 import org.jetbrains.kotlin.script.StandardScriptDefinition
-import org.jetbrains.kotlin.util.PerformanceCounter
+import org.jetbrains.kotlin.utils.DebugLogger
+import org.jetbrains.kotlin.utils.PerformanceCounter
 import org.jetbrains.kotlin.utils.KotlinPaths
 import org.jetbrains.kotlin.utils.KotlinPathsFromHomeDir
 import org.jetbrains.kotlin.utils.PathUtil
@@ -61,6 +62,7 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
 
         messageCollector.report(CompilerMessageSeverity.LOGGING, "Using Kotlin home directory " + paths.homePath, CompilerMessageLocation.NO_LOCATION)
         PerformanceCounter.setTimeCounterEnabled(arguments.reportPerf)
+        DebugLogger.setEnabled(arguments.reportPerf)
 
         setupJdkClasspathRoots(arguments, configuration, messageCollector).let {
             if (it != OK) return it
@@ -201,6 +203,7 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
                 reportGCTime(configuration)
                 reportCompilationTime(configuration)
                 PerformanceCounter.report { s -> reportPerf(configuration, s) }
+                DebugLogger.report { s -> reportLog(configuration, s) }
             }
             return OK
         }
@@ -287,6 +290,13 @@ class K2JVMCompiler : CLICompiler<K2JVMCompilerArguments>() {
 
             val collector = configuration.getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
             collector.report(CompilerMessageSeverity.INFO, "PERF: " + message, CompilerMessageLocation.NO_LOCATION)
+        }
+
+        fun reportLog(configuration: CompilerConfiguration, message: String) {
+            if (!configuration.getBoolean(CLIConfigurationKeys.REPORT_PERF)) return
+
+            val collector = configuration.getNotNull(CLIConfigurationKeys.MESSAGE_COLLECTOR_KEY)
+            collector.report(CompilerMessageSeverity.INFO, "LOG: " + message, CompilerMessageLocation.NO_LOCATION)
         }
 
         fun reportGCTime(configuration: CompilerConfiguration) {

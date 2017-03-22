@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015 JetBrains s.r.o.
+ * Copyright 2010-2017 JetBrains s.r.o.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,45 @@
  * limitations under the License.
  */
 
-package org.jetbrains.kotlin.util
+package org.jetbrains.kotlin.utils
 
 import java.util.*
 import java.util.concurrent.TimeUnit
+
+val perfCounter = PerformanceCounter.create("Find Java class")
+val perfCounter2 = PerformanceCounter.create("Find Java classes")
+val perfCounter3 = PerformanceCounter.create("Building PSI for single class query")
+val perfCounter4 = PerformanceCounter.create("Building PSI for multiple class query")
+val javaBinaryClass = PerformanceCounter.create("Build PSI for binary Java class by VirtualFile")
+val javaSourceCounter = PerformanceCounter.create("Build PSI for source Java class by VirtualFile")
+val queryMethods = PerformanceCounter.create("JavaClassImpl.getMethods")
+val resolveJavaType = PerformanceCounter.create("resolveGenerics in JavaClassifierTypeImpl")
+val getJavaMethods = PerformanceCounter.create("LazyJavaScope.methods: all methods by name", true)
+val getJavaMethodsBasic = PerformanceCounter.create("LazyJavaScope.methods: building descriptor")
+val getJavaMethodsNonDeclared = PerformanceCounter.create("LazyJavaScope.methods: computing non-declared", true)
+val getJavaMethodsComputingSupertypes = PerformanceCounter.create("LazyJavaScope.methods: computing supertypes")
+val getJavaMethodsGettingFunctionsFromSupertypes = PerformanceCounter.create("LazyJavaScope.methods: getting functions from supertypes", true)
+val getJavaMethodsResolveOverrides = PerformanceCounter.create("LazyJavaScope.methods: resolving overrides")
+val getJavaMethodsSpecialNames = PerformanceCounter.create("LazyJavaScope.methods: special named functions")
+val getJavaMethodsSamConstructors = PerformanceCounter.create("LazyJavaScope.methods: SAM constructors")
+val getJavaMethodsStatic = PerformanceCounter.create("LazyJavaScope.methods: Static non-declared")
+val getJavaMethodsReturnType = PerformanceCounter.create("LazyJavaScope.methods: computing return type")
+val getJavaMethodsValueParameters = PerformanceCounter.create("LazyJavaScope.methods: computing value parameters")
+val getJavaMethodsTypeParameters = PerformanceCounter.create("LazyJavaScope.methods: computing type parameters")
+val getJavaMethodsResolvePropagatedSignature = PerformanceCounter.create("LazyJavaScope.methods: resolvePropagatedSignature", true)
+val getJavaMethodsSupertypes2 = PerformanceCounter.create("LazyJavaScope.methods: getSupertypes in resolvePropagatedSignature")
+val getJavaMethodsGetFunctionsFromSupertypes2 = PerformanceCounter.create("LazyJavaScope.methods: getFunctionsFromSupertypes in resolvePropagatedSignature")
+val getJavaMethodsMatchingFunctions = PerformanceCounter.create("LazyJavaScope.methods: matching functions in resolvePropagatedSignature")
+val getJavaMethodsEnhancements = PerformanceCounter.create("LazyJavaScope.methods: enhancement")
+val getJavaProperties = PerformanceCounter.create("LazyJavaScope.properties: all properties by name")
+val queryJavaClasses= PerformanceCounter.create("Searching top-level classes")
+val deserializedFunctions = PerformanceCounter.create("Deserialized.getContributedFunctions", true)
+val deserializedFunctionsComputation = PerformanceCounter.create("Deserialized.functions by name", true)
+val getContributedJavaFunctions = PerformanceCounter.create("LazyJavaScope.getContributedFunctions", true)
+val resolveBasicDescriptor = PerformanceCounter.create("LazyJavaScope.resolveMethodToFunctionDescriptor")
+val callIsVisible = PerformanceCounter.create("LazyJavaScope.isVisible")
+val otherCalls = PerformanceCounter.create("LazyJavaScope.other")
+val isSamClass = PerformanceCounter.create("isSamClass")
 
 val readTopLevelClasses = PerformanceCounter.create("readTopLevel")
 val readInnerClasses = PerformanceCounter.create("readInnerClasses")
@@ -121,14 +156,74 @@ abstract class PerformanceCounter protected constructor(val name: String) {
     }
 }
 
+class DebugLogger private constructor(private val name: String) {
+    companion object {
+        private var isEnabled_ = false
+        private val loggers = mutableListOf<DebugLogger>()
+
+        fun report(consumer: (String) -> Unit) {
+            val loggersCopy = synchronized(loggers) {
+                loggers.toTypedArray()
+            }
+            loggersCopy.forEach { it.report(consumer) }
+        }
+
+        fun create(name: String) = DebugLogger(name)
+
+        fun setEnabled(enabled: Boolean) {
+            isEnabled_ = enabled
+        }
+    }
+
+    init {
+        synchronized(loggers) {
+            loggers.add(this)
+        }
+    }
+
+    private val messages = mutableListOf<String>()
+
+    fun log(message: String, vararg args: Any?) {
+        if (isEnabled_) {
+            messages.add(String.format(message, *args))
+        }
+    }
+
+    fun log(message: String) {
+        if (isEnabled_) {
+            log(message, *arrayOf())
+        }
+    }
+
+    fun log(message: String, arg1: Any?) {
+        if (isEnabled_) {
+            log(message, *arrayOf(arg1))
+        }
+    }
+
+    fun log(message: String, arg1: Any?, arg2: Any?) {
+        if (isEnabled_) {
+            log(message, *arrayOf(arg1, arg2))
+        }
+    }
+
+    fun report(consumer: (String) -> Unit) {
+        messages.forEach {
+            consumer("[$name] $it")
+        }
+    }
+}
+
+val frontendJava = DebugLogger.create("JFrontend")
+
 private class SimpleCounter(name: String): PerformanceCounter(name) {
     override fun <T> countTime(block: () -> T): T {
-        val startTime = PerformanceCounter.currentTime()
+        val startTime = currentTime()
         try {
             return block()
         }
         finally {
-            incrementTime(PerformanceCounter.currentTime() - startTime)
+            incrementTime(currentTime() - startTime)
         }
     }
 }
@@ -137,7 +232,7 @@ private class ReenterableCounter(name: String): PerformanceCounter(name) {
     companion object {
         private val enteredCounters = ThreadLocal<MutableSet<ReenterableCounter>>()
 
-        private fun enterCounter(counter: ReenterableCounter) = PerformanceCounter.getOrPut(enteredCounters) { HashSet() }.add(counter)
+        private fun enterCounter(counter: ReenterableCounter) = getOrPut(enteredCounters) { HashSet() }.add(counter)
 
         private fun leaveCounter(counter: ReenterableCounter) {
             enteredCounters.get()?.remove(counter)
@@ -145,14 +240,14 @@ private class ReenterableCounter(name: String): PerformanceCounter(name) {
     }
 
     override fun <T> countTime(block: () -> T): T {
-        val startTime = PerformanceCounter.currentTime()
+        val startTime = currentTime()
         val needTime = enterCounter(this)
         try {
             return block()
         }
         finally {
             if (needTime) {
-                incrementTime(PerformanceCounter.currentTime() - startTime)
+                incrementTime(currentTime() - startTime)
                 leaveCounter(this)
             }
         }
@@ -170,7 +265,7 @@ internal class CounterWithExclude(name: String, vararg excludedCounters: Perform
         private val counterToCallStackMapThreadLocal = ThreadLocal<MutableMap<CounterWithExclude, CallStackWithTime>>()
 
         private fun getCallStack(counter: CounterWithExclude)
-                = PerformanceCounter.getOrPut(counterToCallStackMapThreadLocal) { HashMap() }.getOrPut(counter) { CallStackWithTime() }
+                = getOrPut(counterToCallStackMapThreadLocal) { HashMap() }.getOrPut(counter) { CallStackWithTime() }
     }
 
     init {
@@ -205,10 +300,10 @@ internal class CounterWithExclude(name: String, vararg excludedCounters: Perform
         fun Stack<Boolean>.peekOrFalse() = if (isEmpty()) false else peek()
 
         private fun intervalUsefulTime(callStackUpdate: Stack<Boolean>.() -> Unit): Long {
-            val delta = if (callStack.peekOrFalse()) PerformanceCounter.currentTime() - intervalStartTime else 0
+            val delta = if (callStack.peekOrFalse()) currentTime() - intervalStartTime else 0
             callStack.callStackUpdate()
 
-            intervalStartTime = PerformanceCounter.currentTime()
+            intervalStartTime = currentTime()
             return delta
         }
 

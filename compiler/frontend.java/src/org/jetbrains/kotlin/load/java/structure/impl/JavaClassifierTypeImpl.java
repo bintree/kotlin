@@ -17,10 +17,12 @@
 package org.jetbrains.kotlin.load.java.structure.impl;
 
 import com.intellij.psi.*;
+import kotlin.jvm.functions.Function0;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.load.java.structure.JavaClassifierType;
 import org.jetbrains.kotlin.load.java.structure.JavaType;
+import org.jetbrains.kotlin.utils.PerformanceCounterKt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -60,9 +62,14 @@ public class JavaClassifierTypeImpl extends JavaTypeImpl<PsiClassType> implement
 
     private void resolve() {
         if (resolutionResult == null) {
-            PsiClassType.ClassResolveResult result = getPsi().resolveGenerics();
-            PsiClass psiClass = result.getElement();
+            PsiClassType.ClassResolveResult result = PerformanceCounterKt.getResolveJavaType().time(new Function0<PsiClassType.ClassResolveResult>() {
+                @Override
+                public PsiClassType.ClassResolveResult invoke() {
+                    return getPsi().resolveGenerics();
+                }
+            });
             PsiSubstitutor substitutor = result.getSubstitutor();
+            PsiClass psiClass = result.getElement();
             resolutionResult = new ResolutionResult(
                     psiClass == null ? null : JavaClassifierImpl.create(psiClass), substitutor, PsiClassType.isRaw(result)
             );

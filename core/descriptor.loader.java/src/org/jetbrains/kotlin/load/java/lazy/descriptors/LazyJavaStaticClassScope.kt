@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 import org.jetbrains.kotlin.utils.DFS
+import org.jetbrains.kotlin.utils.getJavaMethodsStatic
 
 class LazyJavaStaticClassScope(
         c: LazyJavaResolverContext,
@@ -68,9 +69,10 @@ class LazyJavaStaticClassScope(
             ownerDescriptor.unsubstitutedInnerClassesScope.getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
         }?.let { result.add(it) }
 
-        val functionsFromSupertypes = getStaticFunctionsFromJavaSuperClasses(name, ownerDescriptor)
-        result.addAll(resolveOverridesForStaticMembers(name, functionsFromSupertypes, result, ownerDescriptor, c.components.errorReporter))
-
+        getJavaMethodsStatic.time {
+            val functionsFromSupertypes = getStaticFunctionsFromJavaSuperClasses(name, ownerDescriptor)
+            result.addAll(resolveOverridesForStaticMembers(name, functionsFromSupertypes, result, ownerDescriptor, c.components.errorReporter))
+        }
         if (jClass.isEnum) {
             when (name) {
                 DescriptorUtils.ENUM_VALUE_OF -> result.add(createEnumValueOfMethod(ownerDescriptor))
