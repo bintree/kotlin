@@ -35,7 +35,6 @@ import org.jetbrains.kotlin.utils.javaBinaryClass
 import org.jetbrains.kotlin.utils.javaSourceCounter
 import org.jetbrains.kotlin.utils.perfCounter
 import org.jetbrains.kotlin.utils.perfCounter2
-import java.util.*
 import kotlin.properties.Delegates
 
 class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJavaFileManager(myPsiManager), KotlinCliJavaFileManager {
@@ -61,29 +60,14 @@ class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJ
         // which supposedly shouldn't have errors so the dependencies exist in general
         // Most classes are top level classes so we will try to find them fast
         // but we must sometimes fallback to support finding inner/nested classes
-        return qName.toSafeTopLevelClassId()?.let { classId -> findClass(classId, scope) } ?: super.findClass(qName, scope)
+
+        val topLevelClassId = qName.toSafeTopLevelClassId() ?: return super.findClass(qName, scope)
+        return findClass(topLevelClassId, scope)
     }
 
     override fun findClasses(qName: String, scope: GlobalSearchScope): Array<PsiClass> {
         return perfCounter2.time {
-            val classIdAsTopLevelClass = qName.toSafeTopLevelClassId() ?: return@time super.findClasses(qName, scope)
-
-            val result = ArrayList<PsiClass>()
-            val classNameWithInnerClasses = classIdAsTopLevelClass.relativeClassName.asString()
-            index.traverseDirectoriesInPackage(classIdAsTopLevelClass.packageFqName) { dir, rootType ->
-                val psiClass = findClassGivenPackage(scope, dir, classNameWithInnerClasses, rootType)
-                if (psiClass != null) {
-                    result.add(psiClass)
-                }
-                // traverse all
-                true
-            }
-            if (result.isEmpty()) {
-                super.findClasses(qName, scope)
-            }
-            else {
-                result.toTypedArray()
-            }
+            listOfNotNull(findClass(qName, scope)).toTypedArray()
         }
     }
 
