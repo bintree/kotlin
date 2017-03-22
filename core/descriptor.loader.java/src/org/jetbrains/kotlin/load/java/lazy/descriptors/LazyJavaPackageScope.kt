@@ -35,6 +35,7 @@ import org.jetbrains.kotlin.name.SpecialNames
 import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.storage.NullableLazyValue
 import org.jetbrains.kotlin.utils.alwaysTrue
+import org.jetbrains.kotlin.utils.getJavaMethodsSamConstructors
 import org.jetbrains.kotlin.utils.queryJavaClasses
 import java.util.*
 
@@ -163,9 +164,11 @@ class LazyJavaPackageScope(
     }
 
     override fun computeNonDeclaredFunctions(result: MutableCollection<SimpleFunctionDescriptor>, name: Name) {
-        c.components.samConversionResolver.resolveSamConstructor(ownerDescriptor) {
-            getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
-        }?.let { result.add(it) }
+        getJavaMethodsSamConstructors.time {
+            c.components.samConversionResolver.resolveSamConstructor(ownerDescriptor) {
+                getContributedClassifier(name, NoLookupLocation.FOR_ALREADY_TRACKED)
+            }?.let { result.add(it) }
+        }
     }
 
     override fun computePropertyNames(kindFilter: DescriptorKindFilter, nameFilter: ((Name) -> Boolean)?) = emptySet<Name>()
