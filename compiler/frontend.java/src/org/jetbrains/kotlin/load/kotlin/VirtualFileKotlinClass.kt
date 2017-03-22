@@ -21,7 +21,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.vfs.VirtualFile
 import org.jetbrains.kotlin.load.kotlin.header.KotlinClassHeader
 import org.jetbrains.kotlin.name.ClassId
-import org.jetbrains.kotlin.util.PerformanceCounter
+import org.jetbrains.kotlin.utils.PerformanceCounter
 import org.jetbrains.kotlin.utils.rethrow
 import java.io.FileNotFoundException
 import java.io.IOException

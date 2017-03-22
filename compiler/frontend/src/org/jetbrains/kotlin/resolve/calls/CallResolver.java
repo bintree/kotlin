@@ -52,7 +52,7 @@ import org.jetbrains.kotlin.types.expressions.ExpressionTypingContext;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingServices;
 import org.jetbrains.kotlin.types.expressions.ExpressionTypingVisitorDispatcher;
 import org.jetbrains.kotlin.util.OperatorNameConventions;
-import org.jetbrains.kotlin.util.PerformanceCounter;
+import org.jetbrains.kotlin.utils.PerformanceCounter;
 
 import javax.inject.Inject;
 import java.util.*;
