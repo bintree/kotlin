@@ -48,7 +48,11 @@ val getJavaProperties = PerformanceCounter.create("LazyJavaScope.properties: all
 val queryJavaClasses= PerformanceCounter.create("Searching top-level classes")
 val deserializedFunctions = PerformanceCounter.create("Deserialized.getContributedFunctions", true)
 val deserializedFunctionsComputation = PerformanceCounter.create("Deserialized.functions by name", true)
-
+val getContributedJavaFunctions = PerformanceCounter.create("LazyJavaScope.getContributedFunctions", true)
+val resolveBasicDescriptor = PerformanceCounter.create("LazyJavaScope.resolveMethodToFunctionDescriptor")
+val callIsVisible = PerformanceCounter.create("LazyJavaScope.isVisible")
+val otherCalls = PerformanceCounter.create("LazyJavaScope.other")
+val isSamClass = PerformanceCounter.create("isSamClass")
 /**
  * This counter is thread-safe for initialization and usage.
  * But it may calculate time and number of runs not precisely.
