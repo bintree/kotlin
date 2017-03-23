@@ -20,6 +20,7 @@ import com.google.common.collect.Lists;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
 import kotlin.collections.CollectionsKt;
+import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,6 +39,7 @@ import org.jetbrains.kotlin.resolve.jvm.jvmSignature.KotlinToJvmSignatureMapper;
 import org.jetbrains.kotlin.resolve.jvm.jvmSignature.KotlinToJvmSignatureMapperKt;
 import org.jetbrains.kotlin.types.KotlinType;
 import org.jetbrains.kotlin.types.TypeUtils;
+import org.jetbrains.kotlin.utils.PerformanceCounterKt;
 import org.jetbrains.org.objectweb.asm.commons.Method;
 
 import java.util.*;
@@ -193,17 +195,30 @@ public class SignaturesPropagationData {
     private static List<FunctionDescriptor> getSuperFunctionsForMethod(
             @NotNull JavaMethod method,
             @NotNull JavaMethodDescriptor autoMethodDescriptor,
-            @NotNull ClassDescriptor containingClass
+            @NotNull final ClassDescriptor containingClass
     ) {
-        List<FunctionDescriptor> superFunctions = Lists.newArrayList();
+        final List<FunctionDescriptor> superFunctions = Lists.newArrayList();
 
         // TODO: Add propagation for other kotlin descriptors (KT-3621)
-        Name name = method.getName();
+        final Name name = method.getName();
         Method autoSignature = null;
         boolean autoMethodContainsVararg = SignaturePropagationUtilKt.containsVarargs(autoMethodDescriptor);
-        for (KotlinType supertype : containingClass.getTypeConstructor().getSupertypes()) {
-            Collection<SimpleFunctionDescriptor> superFunctionCandidates =
-                    supertype.getMemberScope().getContributedFunctions(name, NoLookupLocation.WHEN_GET_SUPER_MEMBERS);
+        Collection<KotlinType> supertypes = PerformanceCounterKt.getGetJavaMethodsSupertypes2().time(
+                new Function0<Collection<KotlinType>>() {
+                    @Override
+                    public Collection<KotlinType> invoke() {
+                        return containingClass.getTypeConstructor().getSupertypes();
+                    }
+                });
+
+        for (final KotlinType supertype : supertypes) {
+            final Collection<SimpleFunctionDescriptor> superFunctionCandidates = PerformanceCounterKt.getGetJavaMethodsGetFunctionsFromSupertypes2().time(
+                    new Function0<Collection<SimpleFunctionDescriptor>>() {
+                        @Override
+                        public Collection<SimpleFunctionDescriptor> invoke() {
+                            return supertype.getMemberScope().getContributedFunctions(name, NoLookupLocation.WHEN_GET_SUPER_MEMBERS);
+                        }
+                    });
 
             if (!autoMethodContainsVararg && !SignaturePropagationUtilKt.containsAnyNotTrivialSignature(superFunctionCandidates)) continue;
 
@@ -211,16 +226,24 @@ public class SignaturesPropagationData {
                 autoSignature = SIGNATURE_MAPPER.mapToJvmMethodSignature(autoMethodDescriptor);
             }
 
-            for (FunctionDescriptor candidate : superFunctionCandidates) {
-                // Skip suspend super functions, because we doesn't process them correctly by now
-                // Moreover, we fail with exception sometimes
-                // TODO: remove this continue when KT-15747 is fixed
-                if (candidate.isSuspend()) continue;
-                Method candidateSignature = SIGNATURE_MAPPER.mapToJvmMethodSignature(candidate);
-                if (KotlinToJvmSignatureMapperKt.erasedSignaturesEqualIgnoringReturnTypes(autoSignature, candidateSignature)) {
-                    superFunctions.add(candidate);
+            final Method finalAutoSignature = autoSignature;
+            PerformanceCounterKt.getGetJavaMethodsMatchingFunctions().time(new Function0<Object>() {
+                @Override
+                public Object invoke() {
+                    for (FunctionDescriptor candidate : superFunctionCandidates) {
+                        // Skip suspend super functions, because we doesn't process them correctly by now
+                        // Moreover, we fail with exception sometimes
+                        // TODO: remove this continue when KT-15747 is fixed
+                        if (candidate.isSuspend()) continue;
+                        Method candidateSignature = SIGNATURE_MAPPER.mapToJvmMethodSignature(candidate);
+                        if (KotlinToJvmSignatureMapperKt.erasedSignaturesEqualIgnoringReturnTypes(finalAutoSignature, candidateSignature)) {
+                            superFunctions.add(candidate);
+                        }
+                    }
+                    return null;
                 }
-            }
+            });
+
         }
 
         // sorting for diagnostic stability
