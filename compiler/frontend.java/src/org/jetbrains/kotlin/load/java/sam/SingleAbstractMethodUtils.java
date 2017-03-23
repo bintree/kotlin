@@ -16,6 +16,7 @@
 
 package org.jetbrains.kotlin.load.java.sam;
 
+import kotlin.jvm.functions.Function0;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.kotlin.builtins.FunctionTypesKt;
@@ -31,6 +32,7 @@ import org.jetbrains.kotlin.resolve.DescriptorUtils;
 import org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt;
 import org.jetbrains.kotlin.resolve.jvm.JavaResolverUtils;
 import org.jetbrains.kotlin.types.*;
+import org.jetbrains.kotlin.utils.PerformanceCounterKt;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,26 +130,28 @@ public class SingleAbstractMethodUtils {
     }
 
     @Nullable
-    public static FunctionDescriptor getSingleAbstractMethodOrNull(@NotNull ClassDescriptor klass) {
-        if (klass.getKind() != ClassKind.INTERFACE) {
-            return null;
-        }
+    public static FunctionDescriptor getSingleAbstractMethodOrNull(@NotNull final JavaClassDescriptor klass) {
+        if (klass.isDefinitelyNotSam()) return null;
 
-        if (DescriptorUtilsKt.getFqNameSafe(klass).asString().equals("android.databinding.DataBindingComponent")) {
-            return null;
-        }
+        return PerformanceCounterKt.isSamClassSlowPath().time(new Function0<FunctionDescriptor>() {
+            @Override
+            public FunctionDescriptor invoke() {
+                if (DescriptorUtilsKt.getFqNameSafe(klass).asString().equals("android.databinding.DataBindingComponent")) {
+                    return null;
+                }
 
-        List<CallableMemberDescriptor> abstractMembers = getAbstractMembers(klass.getDefaultType());
-        if (abstractMembers.size() == 1) {
-            CallableMemberDescriptor member = abstractMembers.get(0);
-            if (member instanceof SimpleFunctionDescriptor) {
-                return member.getTypeParameters().isEmpty()
-                       ? (FunctionDescriptor) member
-                       : null;
+                List<CallableMemberDescriptor> abstractMembers = getAbstractMembers(klass.getDefaultType());
+                if (abstractMembers.size() == 1) {
+                    CallableMemberDescriptor member = abstractMembers.get(0);
+                    if (member instanceof SimpleFunctionDescriptor) {
+                        return member.getTypeParameters().isEmpty()
+                               ? (FunctionDescriptor) member
+                               : null;
+                    }
+                }
+                return null;
             }
-        }
-
-        return null;
+        });
     }
 
     @NotNull

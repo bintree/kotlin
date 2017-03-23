@@ -53,6 +53,7 @@ val resolveBasicDescriptor = PerformanceCounter.create("LazyJavaScope.resolveMet
 val callIsVisible = PerformanceCounter.create("LazyJavaScope.isVisible")
 val otherCalls = PerformanceCounter.create("LazyJavaScope.other")
 val isSamClass = PerformanceCounter.create("isSamClass")
+val isSamClassSlowPath = PerformanceCounter.create("isSamClassSlowPath")
 /**
  * This counter is thread-safe for initialization and usage.
  * But it may calculate time and number of runs not precisely.

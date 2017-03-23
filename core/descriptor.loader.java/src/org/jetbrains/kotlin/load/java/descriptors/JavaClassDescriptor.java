@@ -23,4 +23,6 @@ import org.jetbrains.kotlin.types.SimpleType;
 public interface JavaClassDescriptor extends ClassDescriptor {
     @Nullable
     SimpleType getFunctionTypeForSamInterface();
+
+    boolean isDefinitelyNotSam();
 }

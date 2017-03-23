@@ -50,6 +50,7 @@ import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.utils.addIfNotNull
 import java.util.*
 
+private val nonAbstractMethodsInObject = setOf("equals", "hashCode", "getClass", "wait", "notify", "notifyAll")
 class LazyJavaClassDescriptor(
         val outerContext: LazyJavaResolverContext,
         containingDeclaration: DeclarationDescriptor,
@@ -132,6 +133,17 @@ class LazyJavaClassDescriptor(
     override fun getDeclaredTypeParameters() = declaredParameters()
 
     override fun getFunctionTypeForSamInterface(): SimpleType? = c.components.samConversionResolver.resolveFunctionTypeIfSamInterface(this)
+
+    override fun isDefinitelyNotSam(): Boolean {
+        if (kind != ClassKind.INTERFACE) return true
+        val declaredMethods = jClass.methods.filter { it.isAbstract && it.typeParameters.isEmpty() }
+
+        if (declaredMethods.count { it.name.identifier !in nonAbstractMethodsInObject } > 1) return true
+
+        return typeConstructor().supertypes.any {
+            (it.constructor.declarationDescriptor as? JavaClassDescriptor)?.isDefinitelyNotSam == true
+        }
+    }
 
     override fun getSealedSubclasses(): Collection<ClassDescriptor> = emptyList()
 
