@@ -369,13 +369,14 @@ class LazyJavaClassMemberScope(
         }
     }
 
-    private fun getFunctionsFromSupertypes(name: Name): Set<SimpleFunctionDescriptor> {
+    private fun getFunctionsFromSupertypes(name: Name): Collection<SimpleFunctionDescriptor> {
         val supertypes = getJavaMethodsComputingSupertypes.time { ownerDescriptor.typeConstructor.supertypes }
         return getJavaMethodsGettingFunctionsFromSupertypes.time {
-            supertypes.flatMapTo(LinkedHashSet()) {
+            supertypes.flatMapTo(SmartList()) {
                 it.memberScope.getContributedFunctions(name, NoLookupLocation.WHEN_GET_SUPER_MEMBERS)
             }
         }
+
     }
 
     override fun computeNonDeclaredProperties(name: Name, result: MutableCollection<PropertyDescriptor>) {

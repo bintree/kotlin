@@ -27,9 +27,7 @@ import org.jetbrains.kotlin.resolve.scopes.MemberScopeImpl
 import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationContext
 import org.jetbrains.kotlin.storage.getValue
-import org.jetbrains.kotlin.utils.Printer
-import org.jetbrains.kotlin.utils.addIfNotNull
-import org.jetbrains.kotlin.utils.compactIfPossible
+import org.jetbrains.kotlin.utils.*
 import java.util.*
 
 abstract class DeserializedMemberScope protected constructor(
@@ -82,12 +80,14 @@ abstract class DeserializedMemberScope protected constructor(
     ) = groupBy { c.nameResolver.getName(getNameIndex(it)) }
 
     private fun computeFunctions(name: Name) =
-            computeDescriptors(
-                    name,
-                    functionProtos,
-                    { c.memberDeserializer.loadFunction(it) },
-                    { computeNonDeclaredFunctions(name, it)}
-            )
+    deserializedFunctionsComputation.time {
+        computeDescriptors(
+                name,
+                functionProtos,
+                { c.memberDeserializer.loadFunction(it) },
+                { computeNonDeclaredFunctions(name, it) }
+        )
+    }
 
     inline private fun <M : MessageLite, D : DeclarationDescriptor> computeDescriptors(
             name: Name,
@@ -107,8 +107,10 @@ abstract class DeserializedMemberScope protected constructor(
     }
 
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> {
-        if (name !in getFunctionNames()) return emptyList()
-        return functions(name)
+        return deserializedFunctions.time {
+            if (name !in getFunctionNames()) emptyList()
+            else functions(name)
+        }
     }
 
     private fun computeProperties(name: Name) =
