@@ -20,9 +20,8 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 val perfCounter = PerformanceCounter.create("Find Java class")
+val perfCounterCalc = PerformanceCounter.create("Find Java class: actual computation")
 val perfCounter2 = PerformanceCounter.create("Find Java classes")
-val perfCounter3 = PerformanceCounter.create("Building PSI for single class query")
-val perfCounter4 = PerformanceCounter.create("Building PSI for multiple class query")
 val javaBinaryClass = PerformanceCounter.create("Build PSI for binary Java class by VirtualFile")
 val javaSourceCounter = PerformanceCounter.create("Build PSI for source Java class by VirtualFile")
 val queryMethods = PerformanceCounter.create("JavaClassImpl.getMethods")
@@ -56,6 +55,9 @@ val isSamClass = PerformanceCounter.create("isSamClass")
 val parseClassifierType = PerformanceCounter.create("parseClassifierType")
 val findClassifier = PerformanceCounter.create("findClassifier for java resolve")
 val findClass = PerformanceCounter.create("findClass for java resolve")
+val allClasses = hashSetOf<String>()
+val allPackages = hashSetOf<String>()
+val allClassesAll = hashSetOf<String>()
 /**
  * This counter is thread-safe for initialization and usage.
  * But it may calculate time and number of runs not precisely.
@@ -73,6 +75,12 @@ abstract class PerformanceCounter protected constructor(val name: String) {
                 allCounters.toTypedArray()
             }
             countersCopy.forEach { it.report(consumer) }
+
+            consumer("JAVA CLASSES FOUND: ${allClasses.size}")
+            consumer("JAVA PACKAGES FOUND: ${allPackages.size}")
+            allClassesAll.addAll(allClasses)
+            allClasses.clear()
+            consumer("JAVA CLASSES ALL FOUND: ${allClassesAll.size}")
         }
 
         fun setTimeCounterEnabled(enable: Boolean) {
