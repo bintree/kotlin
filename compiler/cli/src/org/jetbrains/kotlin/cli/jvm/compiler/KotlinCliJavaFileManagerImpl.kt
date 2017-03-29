@@ -33,6 +33,8 @@ import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.jvm.KotlinCliJavaFileManager
 import org.jetbrains.kotlin.utils.*
+import org.jetbrains.org.objectweb.asm.ClassReader
+import org.jetbrains.org.objectweb.asm.tree.ClassNode
 import kotlin.properties.Delegates
 
 class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJavaFileManager(myPsiManager), KotlinCliJavaFileManager {
@@ -145,6 +147,15 @@ class KotlinCliJavaFileManagerImpl(private val myPsiManager: PsiManager) : CoreJ
             return javaSourceCounter.time(block)
         }
         else if (this.extension == "class") {
+            val contents = perfCounter6.time { contentsToByteArray() }
+            val classNode = ClassNode()
+            perfCounter5.time {
+                ClassReader(contents).accept(
+                        classNode,
+                        ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES
+                )
+            }
+
             return javaBinaryClass.time(block)
         }
         else {
