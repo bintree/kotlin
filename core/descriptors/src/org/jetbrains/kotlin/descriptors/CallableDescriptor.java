@@ -62,6 +62,7 @@ public interface CallableDescriptor extends DeclarationDescriptorWithVisibility,
      */
     boolean hasSynthesizedParameterNames();
 
+    @Deprecated
     @NotNull
     Collection<? extends CallableDescriptor> getOverriddenDescriptors();
     @NotNull

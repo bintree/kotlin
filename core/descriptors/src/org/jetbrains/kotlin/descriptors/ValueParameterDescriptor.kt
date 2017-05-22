@@ -49,7 +49,15 @@ interface ValueParameterDescriptor : VariableDescriptor, ParameterDescriptor {
      * a) their respective owners (function declarations) f1 override f2
      * b) p1 and p2 have the same indices in the owners' parameter lists
      */
+    @Deprecated("")
     override fun getOverriddenDescriptors(): Collection<ValueParameterDescriptor>
+
+    /**
+     * Parameter p1 overrides p2 iff
+     * a) their respective owners (function declarations) f1 override f2
+     * b) p1 and p2 have the same indices in the owners' parameter lists
+     */
+    override fun getOverriddenDescriptorsForOriginal(): Collection<ValueParameterDescriptor>
 
     val isCrossinline: Boolean
 

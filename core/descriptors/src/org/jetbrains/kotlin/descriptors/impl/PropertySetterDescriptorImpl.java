@@ -84,8 +84,8 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
 
     @NotNull
     @Override
-    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
-        return getOriginal().getOverriddenDescriptorsForOriginal();
+    public Collection<? extends PropertySetterDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
     }
 
     @NotNull

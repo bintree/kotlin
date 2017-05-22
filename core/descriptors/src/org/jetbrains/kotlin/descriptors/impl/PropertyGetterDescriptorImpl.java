@@ -63,7 +63,7 @@ public class PropertyGetterDescriptorImpl extends PropertyAccessorDescriptorImpl
 
     @NotNull
     @Override
-    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+    public Collection<? extends PropertyGetterDescriptor> getOverriddenDescriptorsForOriginal() {
         return getOriginal().getOverriddenDescriptors();
     }
 

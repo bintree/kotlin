@@ -23,9 +23,14 @@ import org.jetbrains.kotlin.types.TypeSubstitution;
 import java.util.Collection;
 
 public interface CallableMemberDescriptor extends CallableDescriptor, MemberDescriptor {
+    @Deprecated
     @NotNull
     @Override
     Collection<? extends CallableMemberDescriptor> getOverriddenDescriptors();
+
+    @NotNull
+    @Override
+    Collection<? extends CallableMemberDescriptor> getOverriddenDescriptorsForOriginal();
 
     @NotNull
     @Override
@@ -39,7 +44,7 @@ public interface CallableMemberDescriptor extends CallableDescriptor, MemberDesc
         DELEGATION,
         SYNTHESIZED
         ;
-        
+
         public boolean isReal() {
             return this != FAKE_OVERRIDE;
         }

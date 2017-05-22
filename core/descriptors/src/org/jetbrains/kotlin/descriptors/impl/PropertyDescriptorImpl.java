@@ -489,6 +489,12 @@ public class PropertyDescriptorImpl extends VariableDescriptorWithInitializerImp
 
     @NotNull
     @Override
+    public Collection<? extends PropertyDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
+    }
+
+    @NotNull
+    @Override
     public PropertyDescriptor copy(DeclarationDescriptor newOwner, Modality modality, Visibility visibility, Kind kind, boolean copyOverrides) {
         //noinspection ConstantConditions
         return newCopyBuilder()

@@ -119,4 +119,6 @@ open class ValueParameterDescriptorImpl(
             it.valueParameters[index]
         }
     }
+
+    override fun getOverriddenDescriptorsForOriginal() = getOriginal().overriddenDescriptors
 }

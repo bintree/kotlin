@@ -46,9 +46,14 @@ public interface FunctionDescriptor extends CallableMemberDescriptor {
      * So, if 'getOriginal().getOverriddenDescriptors()' is enough for you, please use it instead.
      * @return
      */
+    @Deprecated
     @Override
     @NotNull
     Collection<? extends FunctionDescriptor> getOverriddenDescriptors();
+
+    @NotNull
+    @Override
+    Collection<? extends FunctionDescriptor> getOverriddenDescriptorsForOriginal();
 
     /**
      * @return descriptor that represents initial signature, e.g in case of result SimpleFunctionDescriptor.createRenamedCopy it returns

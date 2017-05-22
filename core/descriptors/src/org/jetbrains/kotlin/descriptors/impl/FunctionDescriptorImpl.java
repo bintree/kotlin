@@ -186,6 +186,7 @@ public abstract class FunctionDescriptorImpl extends DeclarationDescriptorNonRoo
 
     @NotNull
     @Override
+    @Deprecated
     public Collection<? extends FunctionDescriptor> getOverriddenDescriptors() {
         performOverriddenLazyCalculationIfNeeded();
         return overriddenFunctions != null ? overriddenFunctions : Collections.<FunctionDescriptor>emptyList();
@@ -193,7 +194,7 @@ public abstract class FunctionDescriptorImpl extends DeclarationDescriptorNonRoo
 
     @NotNull
     @Override
-    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+    public Collection<? extends FunctionDescriptor> getOverriddenDescriptorsForOriginal() {
         return getOriginal().getOverriddenDescriptors();
     }
 
