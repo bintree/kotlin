@@ -221,7 +221,7 @@ public class JvmCodegenUtil {
                 }
 
                 // If property overrides something, accessors must be generated too
-                if (!property.getOverriddenDescriptors().isEmpty()) return false;
+                if (!property.getOverriddenDescriptorsForOriginal().isEmpty()) return false;
             }
         }
 

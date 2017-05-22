@@ -256,6 +256,6 @@ class BuilderFactoryForDuplicateSignatureDiagnostics(
         if (descriptor is SamAdapterDescriptor<*>) return true
 
         return descriptor.kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE
-                && descriptor.overriddenDescriptors.all { isOrOverridesSamAdapter(it) }
+                && descriptor.overriddenDescriptorsForOriginal.all { isOrOverridesSamAdapter(it) }
     }
 }

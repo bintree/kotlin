@@ -166,7 +166,7 @@ private fun deprecationByOverridden(root: CallableMemberDescriptor, languageVers
         visited.add(node)
 
         val deprecationsByAnnotation = node.getOwnDeprecations(languageVersionSettings)
-        val overriddenDescriptors = node.original.overriddenDescriptors
+        val overriddenDescriptors = node.overriddenDescriptorsForOriginal
         when {
             deprecationsByAnnotation.isNotEmpty() -> {
                 deprecations.addAll(deprecationsByAnnotation)

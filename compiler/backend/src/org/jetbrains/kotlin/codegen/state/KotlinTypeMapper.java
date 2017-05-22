@@ -683,7 +683,7 @@ public class KotlinTypeMapper {
     //NB: similar platform agnostic code in DescriptorUtils.unwrapFakeOverride
     private FunctionDescriptor findSuperDeclaration(@NotNull FunctionDescriptor descriptor, boolean isSuperCall) {
         while (descriptor.getKind() == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
-            Collection<? extends FunctionDescriptor> overridden = descriptor.getOverriddenDescriptors();
+            Collection<? extends FunctionDescriptor> overridden = descriptor.getOverriddenDescriptorsForOriginal();
             if (overridden.isEmpty()) {
                 throw new IllegalStateException("Fake override should have at least one overridden descriptor: " + descriptor);
             }
@@ -870,12 +870,12 @@ public class KotlinTypeMapper {
 
     @NotNull
     private static FunctionDescriptor findBaseDeclaration(@NotNull FunctionDescriptor function) {
-        if (function.getOverriddenDescriptors().isEmpty()) {
+        if (function.getOverriddenDescriptorsForOriginal().isEmpty()) {
             return function;
         }
         else {
             // TODO: prefer class to interface
-            return findBaseDeclaration(function.getOverriddenDescriptors().iterator().next());
+            return findBaseDeclaration(function.getOverriddenDescriptorsForOriginal().iterator().next());
         }
     }
 

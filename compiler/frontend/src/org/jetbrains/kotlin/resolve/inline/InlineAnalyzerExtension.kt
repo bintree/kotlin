@@ -125,7 +125,7 @@ class InlineAnalyzerExtension(
             return
         }
 
-        val overridesAnything = callableDescriptor.overriddenDescriptors.isNotEmpty()
+        val overridesAnything = callableDescriptor.overriddenDescriptorsForOriginal.isNotEmpty()
 
         if (overridesAnything) {
             val ktTypeParameters = functionOrProperty.typeParameters
