@@ -83,6 +83,12 @@ public abstract class VariableDescriptorImpl extends DeclarationDescriptorNonRoo
 
     @NotNull
     @Override
+    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
+    }
+
+    @NotNull
+    @Override
     public List<TypeParameterDescriptor> getTypeParameters() {
         return Collections.emptyList();
     }

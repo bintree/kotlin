@@ -54,6 +54,7 @@ open class FakeCallableDescriptorForObject(
     override fun hasStableParameterNames() = false
 
     override fun getOverriddenDescriptors(): Set<CallableDescriptor> = Collections.emptySet()
+    override fun getOverriddenDescriptorsForOriginal(): Collection<CallableDescriptor> = original.overriddenDescriptors
 
     override fun getType(): KotlinType = classDescriptor.classValueType!!
 

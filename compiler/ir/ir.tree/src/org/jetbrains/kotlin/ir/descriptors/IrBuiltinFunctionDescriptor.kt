@@ -39,6 +39,7 @@ abstract class IrBuiltinOperatorDescriptorBase(containingDeclaration: Declaratio
     override fun getOriginal(): SimpleFunctionDescriptor = this
     override fun substitute(substitutor: TypeSubstitutor): FunctionDescriptor = throw UnsupportedOperationException()
     override fun getOverriddenDescriptors(): Collection<FunctionDescriptor> = emptyList()
+    override fun getOverriddenDescriptorsForOriginal(): Collection<FunctionDescriptor> = original.overriddenDescriptors
     override fun setOverriddenDescriptors(overriddenDescriptors: Collection<CallableMemberDescriptor>) = throw UnsupportedOperationException()
     override fun getTypeParameters(): List<TypeParameterDescriptor> = emptyList()
     override fun getVisibility(): Visibility = Visibilities.PUBLIC

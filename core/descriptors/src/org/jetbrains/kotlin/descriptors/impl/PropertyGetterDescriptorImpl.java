@@ -49,7 +49,7 @@ public class PropertyGetterDescriptorImpl extends PropertyAccessorDescriptorImpl
               isDefault, isExternal, isInline, kind, source);
         this.original = original != null ? original : this;
     }
-    
+
     public void initialize(KotlinType returnType) {
         this.returnType = returnType == null ? getCorrespondingProperty().getType() : returnType;
     }
@@ -59,6 +59,12 @@ public class PropertyGetterDescriptorImpl extends PropertyAccessorDescriptorImpl
     @SuppressWarnings("unchecked")
     public Collection<? extends PropertyGetterDescriptor> getOverriddenDescriptors() {
         return (Collection) super.getOverriddenDescriptors(true);
+    }
+
+    @NotNull
+    @Override
+    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
     }
 
     @NotNull

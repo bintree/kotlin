@@ -84,6 +84,12 @@ public class PropertySetterDescriptorImpl extends PropertyAccessorDescriptorImpl
 
     @NotNull
     @Override
+    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptorsForOriginal();
+    }
+
+    @NotNull
+    @Override
     public List<ValueParameterDescriptor> getValueParameters() {
         if (parameter == null) {
             throw new IllegalStateException();

@@ -64,4 +64,6 @@ public interface CallableDescriptor extends DeclarationDescriptorWithVisibility,
 
     @NotNull
     Collection<? extends CallableDescriptor> getOverriddenDescriptors();
+    @NotNull
+    Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal();
 }

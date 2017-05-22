@@ -119,6 +119,12 @@ public abstract class AbstractReceiverParameterDescriptor extends DeclarationDes
 
     @NotNull
     @Override
+    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
+    }
+
+    @NotNull
+    @Override
     public Visibility getVisibility() {
         return Visibilities.LOCAL;
     }

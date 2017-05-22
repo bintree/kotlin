@@ -191,6 +191,12 @@ public abstract class FunctionDescriptorImpl extends DeclarationDescriptorNonRoo
         return overriddenFunctions != null ? overriddenFunctions : Collections.<FunctionDescriptor>emptyList();
     }
 
+    @NotNull
+    @Override
+    public Collection<? extends CallableDescriptor> getOverriddenDescriptorsForOriginal() {
+        return getOriginal().getOverriddenDescriptors();
+    }
+
     private void performOverriddenLazyCalculationIfNeeded() {
         Function0<Set<FunctionDescriptor>> overriddenTask = lazyOverriddenFunctionsTask;
         if (overriddenTask != null) {

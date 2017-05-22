@@ -163,6 +163,8 @@ private fun generateFunction(project: Project, descriptor: FunctionDescriptor, b
         override fun getModality() = Modality.OPEN
         override fun getReturnType() = descriptor.returnType?.approximateFlexibleTypes(preferNotNull = true, preferStarForRaw = true)
         override fun getOverriddenDescriptors() = listOf(descriptor)
+        override fun getOverriddenDescriptorsForOriginal() = original.overriddenDescriptors
+
         override fun <R : Any?, D : Any?> accept(visitor: DeclarationDescriptorVisitor<R, D>, data: D) = visitor.visitFunctionDescriptor(this, data)
     }
 
