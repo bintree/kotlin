@@ -16,9 +16,16 @@
 
 package org.jetbrains.kotlin.name;
 
+import kotlin.Pair;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public final class Name implements Comparable<Name> {
+
+    private static final Map<Pair<String, Boolean>, Name> map = new HashMap<Pair<String, Boolean>, Name>();
+
     @NotNull
     private final String name;
     private final boolean special;
@@ -26,6 +33,15 @@ public final class Name implements Comparable<Name> {
     private Name(@NotNull String name, boolean special) {
         this.name = name;
         this.special = special;
+    }
+
+    private static Name create(@NotNull String name, boolean special) {
+        Pair<String, Boolean> pair = new Pair<String, Boolean>(name, special);
+        Name name1 = map.get(pair);
+        if (name1 != null) return name1;
+        Name name2 = new Name(name, special);
+        map.put(pair, name2);
+        return name2;
     }
 
     @NotNull
@@ -52,7 +68,7 @@ public final class Name implements Comparable<Name> {
 
     @NotNull
     public static Name identifier(@NotNull String name) {
-        return new Name(name, false);
+        return create(name, false);
     }
 
     public static boolean isValidIdentifier(@NotNull String name) {
@@ -64,7 +80,7 @@ public final class Name implements Comparable<Name> {
         if (!name.startsWith("<")) {
             throw new IllegalArgumentException("special name must start with '<': " + name);
         }
-        return new Name(name, true);
+        return create(name, true);
     }
 
     @NotNull
