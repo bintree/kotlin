@@ -893,7 +893,7 @@ class ControlFlowInformationProvider private constructor(
             if (functionDescriptor.original != subroutineDescriptor) return@traverse
             // Overridden functions using default arguments at tail call are not included: KT-4285
             if (resolvedCall.call.valueArguments.size != functionDescriptor.valueParameters.size
-                && !functionDescriptor.overriddenDescriptors.isEmpty())
+                && !functionDescriptor.overriddenDescriptorsForOriginal.isEmpty())
                 return@traverse
 
             val element = instruction.element

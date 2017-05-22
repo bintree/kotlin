@@ -777,7 +777,7 @@ public class OverridingUtil {
             @NotNull CallableMemberDescriptor memberDescriptor,
             @Nullable Function1<CallableMemberDescriptor, Unit> cannotInferVisibility
     ) {
-        for (CallableMemberDescriptor descriptor : memberDescriptor.getOverriddenDescriptors()) {
+        for (CallableMemberDescriptor descriptor : memberDescriptor.getOverriddenDescriptorsForOriginal()) {
             if (descriptor.getVisibility() == Visibilities.INHERITED) {
                 resolveUnknownVisibilityForMember(descriptor, cannotInferVisibility);
             }

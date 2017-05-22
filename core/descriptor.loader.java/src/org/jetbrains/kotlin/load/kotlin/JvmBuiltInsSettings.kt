@@ -189,7 +189,7 @@ open class JvmBuiltInsSettings(
                     if (!analogueMember.visibility.isPublicAPI) return@filter false
                     if (KotlinBuiltIns.isDeprecated(analogueMember)) return@filter false
 
-                    if (analogueMember.overriddenDescriptors.any {
+                    if (analogueMember.overriddenDescriptorsForOriginal.any {
                         it.containingDeclaration.fqNameSafe in kotlinVersions
                     }) return@filter false
 

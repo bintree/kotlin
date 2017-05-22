@@ -22,10 +22,10 @@ import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 
 fun FunctionDescriptor.hasJavaOriginInHierarchy(): Boolean {
-    return if (original.overriddenDescriptors.isEmpty())
+    return if (overriddenDescriptorsForOriginal.isEmpty())
         this is JavaCallableMemberDescriptor || containingDeclaration is JavaClassDescriptor
     else
-        original.overriddenDescriptors.any { it.hasJavaOriginInHierarchy() }
+        overriddenDescriptorsForOriginal.any { it.hasJavaOriginInHierarchy() }
 }
 
 fun Visibility.isVisibleOutside() = this != Visibilities.PRIVATE && this != Visibilities.PRIVATE_TO_THIS && this != Visibilities.INVISIBLE_FAKE

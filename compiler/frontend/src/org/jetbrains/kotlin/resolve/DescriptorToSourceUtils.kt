@@ -17,9 +17,12 @@
 package org.jetbrains.kotlin.resolve
 
 import com.intellij.psi.PsiElement
-import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.DECLARATION
 import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.SYNTHESIZED
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptorWithSource
+import org.jetbrains.kotlin.descriptors.PropertyAccessorDescriptor
 import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
 import org.jetbrains.kotlin.descriptors.synthetic.SyntheticMemberDescriptor
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -32,7 +35,7 @@ object DescriptorToSourceUtils {
         if (descriptor is CallableMemberDescriptor) {
             val kind = descriptor.kind
             if (kind != DECLARATION && kind != SYNTHESIZED) {
-                for (overridden in descriptor.overriddenDescriptors) {
+                for (overridden in descriptor.overriddenDescriptorsForOriginal) {
                     collectEffectiveReferencedDescriptors(result, overridden.original)
                 }
                 return

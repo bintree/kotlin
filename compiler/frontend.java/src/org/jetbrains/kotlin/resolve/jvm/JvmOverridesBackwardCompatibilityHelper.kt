@@ -56,7 +56,7 @@ object JvmOverridesBackwardCompatibilityHelper : OverridesBackwardCompatibilityH
                                               ?: return false
 
                         if (JavaToKotlinClassMap.mapKotlinToJava(containingClass.fqNameUnsafe) != null) return true
-                        if (overriddenDescriptor.overriddenDescriptors.isEmpty()) return false
+                        if (overriddenDescriptor.overriddenDescriptorsForOriginal.isEmpty()) return false
 
                         return isOverridingOnlyDescriptorsThatCanBeImplicitlyOverridden(overriddenDescriptor, visitedDescriptors)
                     }
