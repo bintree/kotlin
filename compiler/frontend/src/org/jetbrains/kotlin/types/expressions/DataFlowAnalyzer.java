@@ -79,7 +79,7 @@ public class DataFlowAnalyzer {
     @Nullable
     private static FunctionDescriptor getOverriddenDescriptorFromClass(@NotNull FunctionDescriptor descriptor) {
         if (descriptor.getKind() != CallableMemberDescriptor.Kind.FAKE_OVERRIDE) return descriptor;
-        Collection<? extends FunctionDescriptor> overriddenDescriptors = descriptor.getOverriddenDescriptors();
+        Collection<? extends FunctionDescriptor> overriddenDescriptors = descriptor.getOverriddenDescriptorsForOriginal();
         if (overriddenDescriptors.isEmpty()) return descriptor;
         for (FunctionDescriptor overridden : overriddenDescriptors) {
             DeclarationDescriptor containingDeclaration = overridden.getContainingDeclaration();

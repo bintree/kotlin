@@ -81,7 +81,7 @@ fun isSynthesizedInvoke(descriptor: DeclarationDescriptor): Boolean {
     var real: FunctionDescriptor = descriptor
     while (!real.kind.isReal) {
         // You can't override two different synthesized invokes at the same time
-        real = real.overriddenDescriptors.singleOrNull() ?: return false
+        real = real.overriddenDescriptorsForOriginal.singleOrNull() ?: return false
     }
 
     return real.kind == CallableMemberDescriptor.Kind.SYNTHESIZED &&

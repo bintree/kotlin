@@ -192,7 +192,7 @@ object OperatorChecks : AbstractModifierChecks() {
             Checks(RANGE_TO, MemberOrExtension, SingleValueParameter, NoDefaultAndVarargsCheck),
             Checks(EQUALS, Member) {
                 fun DeclarationDescriptor.isAny() = this is ClassDescriptor && KotlinBuiltIns.isAny(this)
-                ensure(containingDeclaration.isAny() || overriddenDescriptors.any { it.containingDeclaration.isAny() }) { "must override ''equals()'' in Any" }
+                ensure(containingDeclaration.isAny() || overriddenDescriptorsForOriginal.any { it.containingDeclaration.isAny() }) { "must override ''equals()'' in Any" }
             },
             Checks(COMPARE_TO, MemberOrExtension, ReturnsInt, SingleValueParameter, NoDefaultAndVarargsCheck),
             Checks(BINARY_OPERATION_NAMES, MemberOrExtension, SingleValueParameter, NoDefaultAndVarargsCheck),

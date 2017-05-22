@@ -79,7 +79,7 @@ object BuiltinSpecialProperties {
         if (fqNameOrNull() in SPECIAL_FQ_NAMES && valueParameters.isEmpty()) return true
         if (!KotlinBuiltIns.isBuiltIn(this)) return false
 
-        return overriddenDescriptors.any { hasBuiltinSpecialPropertyFqName(it) }
+        return overriddenDescriptorsForOriginal.any { hasBuiltinSpecialPropertyFqName(it) }
     }
 
     fun getPropertyNameCandidatesBySpecialGetterName(name1: Name): List<Name> =
