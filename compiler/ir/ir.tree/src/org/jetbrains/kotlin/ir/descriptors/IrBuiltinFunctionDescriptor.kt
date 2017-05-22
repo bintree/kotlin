@@ -99,6 +99,7 @@ class IrBuiltinValueParameterDescriptorImpl(
     override fun declaresDefaultValue(): Boolean = false
     override fun getOriginal(): ValueParameterDescriptor = this
     override fun getOverriddenDescriptors(): Collection<ValueParameterDescriptor> = emptyList()
+    override fun getOverriddenDescriptorsForOriginal(): Collection<ValueParameterDescriptor> = original.overriddenDescriptors
     override val isCrossinline: Boolean get() = false
     override val isNoinline: Boolean get() = false
     override val varargElementType: KotlinType? get() = null
