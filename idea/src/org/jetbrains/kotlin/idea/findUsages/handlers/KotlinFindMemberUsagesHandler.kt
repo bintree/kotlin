@@ -186,7 +186,7 @@ abstract class KotlinFindMemberUsagesHandler<T : KtNamedDeclaration>
         val descriptorsToHighlight = if (callableDescriptor is ParameterDescriptor)
             listOf(callableDescriptor)
         else
-            callableDescriptor?.findOriginalTopMostOverriddenDescriptors() ?: emptyList<CallableDescriptor>()
+            callableDescriptor?.findOriginalTopMostOverriddenDescriptors(useOriginal = true) ?: emptyList<CallableDescriptor>()
 
         val baseDeclarations = descriptorsToHighlight.map { it.source.getPsi() }.filter { it != null && it != target }
 

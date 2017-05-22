@@ -63,7 +63,7 @@ fun DeclarationDescriptor.findKDoc(): KDocTag? {
     }
 
     if (this is CallableDescriptor) {
-        for (baseDescriptor in this.overriddenDescriptors) {
+        for (baseDescriptor in this.overriddenDescriptorsForOriginal) {
             val baseKDoc = baseDescriptor.original.findKDoc()
             if (baseKDoc != null) {
                 return baseKDoc

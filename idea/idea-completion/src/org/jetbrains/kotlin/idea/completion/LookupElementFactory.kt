@@ -84,7 +84,7 @@ class LookupElementFactory(
                 .takeWhile { it !is ClassDescriptor }
                 .filterIsInstance<FunctionDescriptor>()
                 .toList()
-                .flatMap { it.findOriginalTopMostOverriddenDescriptors() }
+                .flatMap { it.findOriginalTopMostOverriddenDescriptors(useOriginal = true) }
                 .toSet()
     }
 
@@ -207,7 +207,7 @@ class LookupElementFactory(
 
     private fun createSuperFunctionCallWithArguments(descriptor: FunctionDescriptor): LookupElement? {
         if (descriptor.valueParameters.isEmpty()) return null
-        if (descriptor.findOriginalTopMostOverriddenDescriptors().none { it in superFunctions }) return null
+        if (descriptor.findOriginalTopMostOverriddenDescriptors(useOriginal = false).none { it in superFunctions }) return null
 
         val argumentText = descriptor.valueParameters.map {
             (if (it.varargElementType != null) "*" else "") + it.name.render()

@@ -340,7 +340,7 @@ class PreferContextElementsWeigher(context: DeclarationDescriptor) : LookupEleme
     private val contextElements = context.parentsWithSelf
             .takeWhile { it !is PackageFragmentDescriptor }
             .toList()
-            .flatMap { if (it is CallableDescriptor) it.findOriginalTopMostOverriddenDescriptors() else listOf(it) }
+            .flatMap { if (it is CallableDescriptor) it.findOriginalTopMostOverriddenDescriptors(useOriginal = true) else listOf(it) }
             .toSet()
     private val contextElementNames = contextElements.map { it.name }.toSet()
 

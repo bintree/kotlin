@@ -28,9 +28,9 @@ import org.jetbrains.kotlin.lexer.KtModifierKeywordToken
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.OverridingUtil
+import org.jetbrains.kotlin.resolve.descriptorUtil.isExtension
 import org.jetbrains.kotlin.resolve.findOriginalTopMostOverriddenDescriptors
 import org.jetbrains.kotlin.resolve.scopes.LexicalScope
 import org.jetbrains.kotlin.resolve.scopes.receivers.ExpressionReceiver
@@ -104,8 +104,8 @@ fun compareDescriptors(project: Project, currentDescriptor: DeclarationDescripto
     if (compareDescriptorsText(project, currentDescriptor, originalDescriptor)) return true
 
     if (originalDescriptor is CallableDescriptor && currentDescriptor is CallableDescriptor) {
-        val overriddenOriginalDescriptor = originalDescriptor.findOriginalTopMostOverriddenDescriptors()
-        val overriddenCurrentDescriptor = currentDescriptor.findOriginalTopMostOverriddenDescriptors()
+        val overriddenOriginalDescriptor = originalDescriptor.findOriginalTopMostOverriddenDescriptors(useOriginal = false)
+        val overriddenCurrentDescriptor = currentDescriptor.findOriginalTopMostOverriddenDescriptors(useOriginal = false)
 
         if (overriddenOriginalDescriptor.size != overriddenCurrentDescriptor.size) return false
         return overriddenCurrentDescriptor.zip(overriddenOriginalDescriptor).all {
