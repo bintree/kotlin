@@ -28,7 +28,7 @@ import org.jetbrains.kotlin.serialization.deserialization.PLATFORM_DEPENDENT_ANN
 object JvmOverridesBackwardCompatibilityHelper : OverridesBackwardCompatibilityHelper {
     override fun overrideCanBeOmitted(overridingDescriptor: CallableMemberDescriptor): Boolean {
         val visitedDescriptors = hashSetOf<CallableMemberDescriptor>()
-        return overridingDescriptor.overriddenDescriptors.all {
+        return overridingDescriptor.overriddenDescriptorsForOriginal.all {
             isPlatformSpecificDescriptorThatCanBeImplicitlyOverridden(it, visitedDescriptors)
         }
     }
@@ -75,7 +75,7 @@ object JvmOverridesBackwardCompatibilityHelper : OverridesBackwardCompatibilityH
             overriddenDescriptor: CallableMemberDescriptor,
             visitedDescriptors: MutableSet<CallableMemberDescriptor>
     ): Boolean =
-            overriddenDescriptor.overriddenDescriptors.all {
+            overriddenDescriptor.overriddenDescriptorsForOriginal.all {
                 isPlatformSpecificDescriptorThatCanBeImplicitlyOverridden(it, visitedDescriptors)
             }
 

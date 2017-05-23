@@ -21,13 +21,13 @@ import org.jetbrains.kotlin.utils.DFS
 import org.jetbrains.kotlin.utils.SmartSet
 import java.util.*
 
-fun <D : CallableDescriptor> D.findTopMostOverriddenDescriptors(): List<D> {
+fun <D : CallableDescriptor> D.findTopMostOverriddenDescriptors(useOriginal: Boolean): List<D> {
     return DFS.dfs(
             listOf(this),
-            { current -> current.overriddenDescriptors },
+            { current -> if (useOriginal) current.overriddenDescriptorsForOriginal else current.overriddenDescriptors },
             object : DFS.CollectingNodeHandler<CallableDescriptor, CallableDescriptor, ArrayList<D>>(ArrayList<D>()) {
                 override fun afterChildren(current: CallableDescriptor) {
-                    if (current.overriddenDescriptors.isEmpty()) {
+                    if (current.overriddenDescriptorsForOriginal.isEmpty()) {
                         @Suppress("UNCHECKED_CAST")
                         result.add(current as D)
                     }
@@ -36,8 +36,8 @@ fun <D : CallableDescriptor> D.findTopMostOverriddenDescriptors(): List<D> {
 }
 
 
-fun <D : CallableDescriptor> D.findOriginalTopMostOverriddenDescriptors(): Set<D> {
-    return findTopMostOverriddenDescriptors().mapTo(LinkedHashSet<D>()) {
+fun <D : CallableDescriptor> D.findOriginalTopMostOverriddenDescriptors(useOriginal: Boolean): Set<D> {
+    return findTopMostOverriddenDescriptors(useOriginal).mapTo(LinkedHashSet<D>()) {
         @Suppress("UNCHECKED_CAST")
         (it.original as D)
     }

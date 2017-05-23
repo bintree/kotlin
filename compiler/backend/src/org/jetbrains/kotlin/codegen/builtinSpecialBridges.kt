@@ -77,7 +77,7 @@ object BuiltinSpecialBridgesUtil {
         commonBridges.removeAll(specialBridgesSignaturesInSuperClass + listOfNotNull(specialBridge?.from))
 
         if (fake) {
-            for (overridden in function.overriddenDescriptors.map { it.original }) {
+            for (overridden in function.overriddenDescriptorsForOriginal.map { it.original }) {
                 if (!DescriptorBasedFunctionHandle(overridden, isBodyOwner).isAbstract) {
                     commonBridges.removeAll(findAllReachableDeclarations(overridden, isBodyOwner).map(signatureByDescriptor))
                 }

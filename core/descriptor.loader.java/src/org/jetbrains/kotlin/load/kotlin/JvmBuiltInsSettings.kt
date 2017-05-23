@@ -215,7 +215,7 @@ open class JvmBuiltInsSettings(
 
         return DFS.ifAny<CallableMemberDescriptor>(
                 listOf(this),
-                { it.original.overriddenDescriptors }
+                { it.original.overriddenDescriptorsForOriginal }
         ) {
             overridden ->
             overridden.kind == CallableMemberDescriptor.Kind.DECLARATION &&

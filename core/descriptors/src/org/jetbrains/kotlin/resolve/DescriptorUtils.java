@@ -137,7 +137,7 @@ public class DescriptorUtils {
     }
 
     public static boolean isOverride(@NotNull CallableMemberDescriptor descriptor) {
-        return !descriptor.getOverriddenDescriptors().isEmpty();
+        return !descriptor.getOverriddenDescriptorsForOriginal().isEmpty();
     }
 
     /**
@@ -426,7 +426,7 @@ public class DescriptorUtils {
     @SuppressWarnings("unchecked")
     public static <D extends CallableMemberDescriptor> D unwrapFakeOverride(@NotNull D descriptor) {
         while (descriptor.getKind() == CallableMemberDescriptor.Kind.FAKE_OVERRIDE) {
-            Collection<? extends CallableMemberDescriptor> overridden = descriptor.getOverriddenDescriptors();
+            Collection<? extends CallableMemberDescriptor> overridden = descriptor.getOverriddenDescriptorsForOriginal();
             if (overridden.isEmpty()) {
                 throw new IllegalStateException("Fake override should have at least one overridden descriptor: " + descriptor);
             }
@@ -490,9 +490,15 @@ public class DescriptorUtils {
 
     @NotNull
     @SuppressWarnings("unchecked")
-    public static <D extends CallableMemberDescriptor> Set<D> getAllOverriddenDeclarations(@NotNull D memberDescriptor) {
+    public static <D extends CallableMemberDescriptor> Set<D> getAllOverriddenDeclarations(
+            @NotNull D memberDescriptor, boolean useOriginal
+    ) {
         Set<D> result = new HashSet<D>();
-        for (CallableMemberDescriptor overriddenDeclaration : memberDescriptor.getOverriddenDescriptors()) {
+        Collection<? extends CallableMemberDescriptor> overriddenDescriptors =
+                useOriginal
+                ? memberDescriptor.getOverriddenDescriptorsForOriginal()
+                : memberDescriptor.getOverriddenDescriptors();
+        for (CallableMemberDescriptor overriddenDeclaration : overriddenDescriptors) {
             CallableMemberDescriptor.Kind kind = overriddenDeclaration.getKind();
             if (kind == DECLARATION) {
                 result.add((D) overriddenDeclaration);
@@ -503,7 +509,7 @@ public class DescriptorUtils {
             else {
                 throw new AssertionError("Unexpected callable kind " + kind);
             }
-            result.addAll(getAllOverriddenDeclarations((D) overriddenDeclaration));
+            result.addAll(getAllOverriddenDeclarations((D) overriddenDeclaration, true));
         }
         return result;
     }

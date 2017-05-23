@@ -58,7 +58,7 @@ internal fun DeclarationDescriptor.checkSinceKotlinVersionAccessibility(
  *         or the minimal value of the version from all declarations annotated with [SinceKotlin] otherwise.
  */
 private fun getSinceKotlinVersionByOverridden(descriptor: CallableMemberDescriptor): ApiVersion? {
-    return DescriptorUtils.getAllOverriddenDeclarations(descriptor).map { it.getOwnSinceKotlinVersion() ?: return null }.min()
+    return DescriptorUtils.getAllOverriddenDeclarations(descriptor, true).map { it.getOwnSinceKotlinVersion() ?: return null }.min()
 }
 
 private fun DeclarationDescriptor.getOwnSinceKotlinVersion(): ApiVersion? {

@@ -114,7 +114,7 @@ internal class KotlinStructureElementPresentation(
             return withRightArrow(ONLY_NAMES_WITH_SHORT_TYPES.render(descriptor.containingDeclaration))
         }
 
-        val overridingDescriptors = filterOutOverridden(getAllOverriddenDeclarations(descriptor))
+        val overridingDescriptors = filterOutOverridden(getAllOverriddenDeclarations(descriptor, true))
         // Location can be missing when base in synthesized
         return overridingDescriptors.firstOrNull()?.let {
             withRightArrow(ONLY_NAMES_WITH_SHORT_TYPES.render(it.containingDeclaration))

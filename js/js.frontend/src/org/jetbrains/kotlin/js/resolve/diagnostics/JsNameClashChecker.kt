@@ -157,7 +157,7 @@ class JsNameClashChecker : SimpleDeclarationChecker {
     }
 
     private fun checkOverrideClashes(descriptor: CallableMemberDescriptor, target: MutableMap<String, DeclarationDescriptor>) {
-        for (overriddenDescriptor in DescriptorUtils.getAllOverriddenDeclarations(descriptor)) {
+        for (overriddenDescriptor in DescriptorUtils.getAllOverriddenDeclarations(descriptor, true)) {
             val overriddenFqn = nameSuggestion.suggest(overriddenDescriptor)!!
             if (overriddenFqn.stable) {
                 val existing = target[overriddenFqn.names.last()]

@@ -99,7 +99,7 @@ class DelegationResolver<T : CallableMemberDescriptor> private constructor(
             }
 
     private fun T.overridesClassMembersOnly() =
-            DescriptorUtils.getAllOverriddenDeclarations(this).all {
+            DescriptorUtils.getAllOverriddenDeclarations(this, true).all {
                 DescriptorUtils.isClass(it.containingDeclaration)
             }
 

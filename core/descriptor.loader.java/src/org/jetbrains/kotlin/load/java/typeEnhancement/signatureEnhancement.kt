@@ -38,7 +38,7 @@ private fun <D : CallableMemberDescriptor> D.enhanceSignature(): D {
     if (this !is JavaCallableMemberDescriptor) return this
 
     // Fake overrides with one overridden has been enhanced before
-    if (kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE && original.overriddenDescriptors.size == 1) return this
+    if (kind == CallableMemberDescriptor.Kind.FAKE_OVERRIDE && overriddenDescriptorsForOriginal.size == 1) return this
 
     val receiverTypeEnhancement =
             if (extensionReceiverParameter != null)
@@ -100,7 +100,7 @@ private data class PartEnhancementResult(val type: KotlinType, val wereChanges: 
 private fun <D : CallableMemberDescriptor> D.parts(isCovariant: Boolean, collector: (D) -> KotlinType): SignatureParts {
     return SignatureParts(
             collector(this),
-            this.overriddenDescriptors.map {
+            this.overriddenDescriptorsForOriginal.map {
                 @Suppress("UNCHECKED_CAST")
                 collector(it as D)
             },

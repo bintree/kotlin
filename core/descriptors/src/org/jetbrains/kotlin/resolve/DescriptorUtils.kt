@@ -191,8 +191,8 @@ fun CallableDescriptor.getOwnerForEffectiveDispatchReceiverParameter(): Declarat
 fun ValueParameterDescriptor.hasDefaultValue(): Boolean {
     return DFS.ifAny(
             listOf(this),
-            DFS.Neighbors<ValueParameterDescriptor> { current ->
-                current.overriddenDescriptors.map(ValueParameterDescriptor::getOriginal)
+            { current ->
+                current.overriddenDescriptorsForOriginal.map(ValueParameterDescriptor::getOriginal)
             },
             ValueParameterDescriptor::declaresDefaultValue
     )
@@ -200,7 +200,7 @@ fun ValueParameterDescriptor.hasDefaultValue(): Boolean {
 
 fun FunctionDescriptor.hasOrInheritsParametersWithDefaultValue(): Boolean = DFS.ifAny(
         listOf(this),
-        { current -> current.overriddenDescriptors.map { it.original } },
+        { current -> current.overriddenDescriptorsForOriginal.map { it.original } },
         { it.hasOwnParametersWithDefaultValue() }
 )
 

@@ -157,7 +157,7 @@ class JavaSyntheticPropertiesScope(storageManager: StorageManager, private val l
     }
 
     private fun FunctionDescriptor.findOverridden(condition: (FunctionDescriptor) -> Boolean): FunctionDescriptor? {
-        for (descriptor in overriddenDescriptors) {
+        for (descriptor in overriddenDescriptorsForOriginal) {
             if (condition(descriptor)) return descriptor
             descriptor.findOverridden(condition)?.let { return it }
         }

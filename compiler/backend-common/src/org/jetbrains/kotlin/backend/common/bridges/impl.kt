@@ -20,7 +20,6 @@ import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.Modality
-import org.jetbrains.kotlin.renderer.DescriptorRenderer
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.OverridingUtil
 import org.jetbrains.kotlin.resolve.calls.callResolverUtil.isOrOverridesSynthesized
@@ -62,7 +61,7 @@ class DescriptorBasedFunctionHandle(
         */
         isBodyOwner: (DeclarationDescriptor) -> Boolean
 ) : FunctionHandle {
-    private val overridden = descriptor.overriddenDescriptors.map { DescriptorBasedFunctionHandle(it.original, isBodyOwner) }
+    private val overridden = descriptor.overriddenDescriptorsForOriginal.map { DescriptorBasedFunctionHandle(it.original, isBodyOwner) }
 
     override val isDeclaration: Boolean =
             descriptor.kind.isReal ||

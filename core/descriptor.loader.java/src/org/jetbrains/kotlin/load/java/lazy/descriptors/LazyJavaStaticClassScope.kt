@@ -133,6 +133,6 @@ class LazyJavaStaticClassScope(
         get() {
             if (this.kind.isReal) return this
 
-            return this.overriddenDescriptors.map { it.realOriginal }.distinct().single()
+            return this.overriddenDescriptorsForOriginal.map { it.realOriginal }.distinct().single()
         }
 }

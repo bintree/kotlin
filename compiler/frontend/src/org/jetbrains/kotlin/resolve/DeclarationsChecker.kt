@@ -937,9 +937,8 @@ class DeclarationsChecker(
         }
 
         private fun isImplementingMethodOfAnyInternal(member: CallableMemberDescriptor, visitedClasses: MutableSet<ClassDescriptor>): Boolean {
-            for (overridden in member.overriddenDescriptors) {
-                val containingDeclaration = overridden.containingDeclaration
-                if (containingDeclaration !is ClassDescriptor) continue
+            for (overridden in member.overriddenDescriptorsForOriginal) {
+                val containingDeclaration = overridden.containingDeclaration as? ClassDescriptor ?: continue
                 if (visitedClasses.contains(containingDeclaration)) continue
 
                 if (DescriptorUtils.getFqName(containingDeclaration) == KotlinBuiltIns.FQ_NAMES.any) {

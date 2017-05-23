@@ -22,25 +22,22 @@ import com.intellij.psi.PsiElement
 import com.intellij.util.SmartList
 import com.intellij.util.containers.ContainerUtil
 import com.intellij.util.containers.SmartHashSet
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.DELEGATION
+import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.FAKE_OVERRIDE
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactory2
 import org.jetbrains.kotlin.diagnostics.DiagnosticFactoryWithPsiElement
+import org.jetbrains.kotlin.diagnostics.Errors.*
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.calls.callResolverUtil.*
-import org.jetbrains.kotlin.types.*
-import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
-
-import java.util.*
-
-import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.DELEGATION
-import org.jetbrains.kotlin.descriptors.CallableMemberDescriptor.Kind.FAKE_OVERRIDE
-import org.jetbrains.kotlin.diagnostics.Errors.*
 import org.jetbrains.kotlin.resolve.DescriptorUtils.classCanHaveAbstractMembers
 import org.jetbrains.kotlin.resolve.OverridingUtil.OverrideCompatibilityInfo.Result.OVERRIDABLE
+import org.jetbrains.kotlin.resolve.calls.callResolverUtil.isOrOverridesSynthesized
+import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.types.checker.KotlinTypeChecker
 import org.jetbrains.kotlin.utils.addToStdlib.assertedCast
+import java.util.*
 
 class OverrideResolver(
         private val trace: BindingTrace,
@@ -258,7 +255,7 @@ class OverrideResolver(
 
         val modifierList = member.modifierList
         val hasOverrideNode = modifierList != null && modifierList.hasModifier(KtTokens.OVERRIDE_KEYWORD)
-        val overriddenDescriptors = declared.overriddenDescriptors
+        val overriddenDescriptors = declared.overriddenDescriptorsForOriginal
 
         if (hasOverrideNode) {
             checkOverridesForMemberMarkedOverride(declared, object : CheckOverrideReportForDeclaredMemberStrategy {
@@ -371,7 +368,7 @@ class OverrideResolver(
         //  b) p1 must have the same name as p2
         for (parameterFromSubclass in declared.valueParameters) {
             var defaultsInSuper = 0
-            for (parameterFromSuperclass in parameterFromSubclass.overriddenDescriptors) {
+            for (parameterFromSuperclass in parameterFromSubclass.overriddenDescriptorsForOriginal) {
                 if (parameterFromSuperclass.declaresDefaultValue()) {
                     defaultsInSuper++
                 }
@@ -398,7 +395,7 @@ class OverrideResolver(
             trace.report(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES.on(parameter, descriptor))
         }
 
-        for (parameterFromSuperclass in descriptor.overriddenDescriptors) {
+        for (parameterFromSuperclass in descriptor.overriddenDescriptorsForOriginal) {
             if (shouldReportParameterNameOverrideWarning(descriptor, parameterFromSuperclass)) {
 
                 trace.report(PARAMETER_NAME_CHANGED_ON_OVERRIDE.on(
@@ -422,11 +419,11 @@ class OverrideResolver(
             trace.report(MULTIPLE_DEFAULTS_INHERITED_FROM_SUPERTYPES_WHEN_NO_EXPLICIT_OVERRIDE.on(classElement, descriptor))
         }
 
-        for (parameterFromSuperclass in descriptor.overriddenDescriptors) {
+        for (parameterFromSuperclass in descriptor.overriddenDescriptorsForOriginal) {
             if (shouldReportParameterNameOverrideWarning(descriptor, parameterFromSuperclass)) {
                 trace.report(DIFFERENT_NAMES_FOR_THE_SAME_PARAMETER_IN_SUPERTYPES.on(
                         classElement,
-                        containingFunction.overriddenDescriptors,
+                        containingFunction.overriddenDescriptorsForOriginal,
                         parameterFromSuperclass.index + 1)
                 )
             }
@@ -448,7 +445,7 @@ class OverrideResolver(
 
     private fun checkVisibilityForMember(declaration: KtDeclaration, memberDescriptor: CallableMemberDescriptor) {
         val visibility = memberDescriptor.visibility
-        for (descriptor in memberDescriptor.overriddenDescriptors) {
+        for (descriptor in memberDescriptor.overriddenDescriptorsForOriginal) {
             val compare = Visibilities.compare(visibility, descriptor.visibility)
             if (compare == null) {
                 trace.report(CANNOT_CHANGE_ACCESS_PRIVILEGE.on(declaration, descriptor.visibility, descriptor, descriptor.containingDeclaration))
@@ -518,7 +515,7 @@ class OverrideResolver(
             if (kind != FAKE_OVERRIDE && kind != DELEGATION) return
             if (descriptor.visibility === Visibilities.INVISIBLE_FAKE) return
 
-            val directOverridden = descriptor.overriddenDescriptors
+            val directOverridden = descriptor.overriddenDescriptorsForOriginal
             assert(!directOverridden.isEmpty()) { kind.toString() + " " + descriptor.name.asString() + " must override something" }
 
             // collects map from the directly overridden descriptor to the set of declarations:
