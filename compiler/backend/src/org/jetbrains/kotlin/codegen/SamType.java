@@ -55,7 +55,7 @@ public class SamType {
 
     @NotNull
     public SimpleFunctionDescriptor getAbstractMethod() {
-        return (SimpleFunctionDescriptor) SingleAbstractMethodUtils.getAbstractMembers(type).get(0);
+        return (SimpleFunctionDescriptor) SingleAbstractMethodUtils.getAbstractMembers(getJavaClassDescriptor()).get(0);
     }
 
     @Override
