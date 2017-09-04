@@ -378,9 +378,9 @@ open class LazyClassMemberScope(
         c.lookupTracker.record(from, thisDescriptor, name)
     }
 
-    override fun getClassifierNames(): Set<Name>? =
-            declarationProvider.getDeclarationNames() +
-            c.syntheticResolveExtension.getSyntheticNestedClassNames(thisDescriptor)
+//    override fun getClassifierNames(): Set<Name>? =
+//            declarationProvider.getDeclarationNames() +
+//            c.syntheticResolveExtension.getSyntheticNestedClassNames(thisDescriptor)
 
 //    override fun definitelyDoesNotContainName(name: Name) =
 //            getContributedFunctions(name, NoLookupLocation.FOR_ALREADY_TRACKED).isEmpty() &&
