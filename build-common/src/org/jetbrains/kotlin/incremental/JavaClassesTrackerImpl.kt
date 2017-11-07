@@ -23,7 +23,6 @@ import org.jetbrains.kotlin.load.java.descriptors.JavaClassDescriptor
 import org.jetbrains.kotlin.name.ClassId
 import org.jetbrains.kotlin.protobuf.ExtensionRegistryLite
 import org.jetbrains.kotlin.resolve.descriptorUtil.classId
-import org.jetbrains.kotlin.resolve.jvm.JvmClassName
 import org.jetbrains.kotlin.resolve.source.PsiSourceElement
 import org.jetbrains.kotlin.serialization.DescriptorSerializer
 import org.jetbrains.kotlin.serialization.ProtoBuf
@@ -37,7 +36,7 @@ import java.io.DataOutput
 import java.io.File
 
 class JavaClassesTrackerImpl(private val cache: IncrementalJvmCache) : JavaClassesTracker {
-    private val classToSourceSerialized: MutableMap<JvmClassName, SerializedJavaClassWithSource> = hashMapOf()
+    private val classToSourceSerialized: MutableMap<ClassId, SerializedJavaClassWithSource> = hashMapOf()
 
     val javaClassesUpdates
         get() = classToSourceSerialized.values
@@ -53,10 +52,9 @@ class JavaClassesTrackerImpl(private val cache: IncrementalJvmCache) : JavaClass
 
     override fun onCompletedAnalysis() {
         for (classDescriptor in classDescriptors.toList()) {
-            classToSourceSerialized[JvmClassName.byClassId(classDescriptor.classId!!)] =
+            classToSourceSerialized[classDescriptor.classId!!] =
                     classDescriptor.convertToProto()
         }
-        classDescriptors.clear()
     }
 
     override fun getAdditionalClassesToReport(): Collection<ClassId> = cache.getObsoleteJavaClasses()
