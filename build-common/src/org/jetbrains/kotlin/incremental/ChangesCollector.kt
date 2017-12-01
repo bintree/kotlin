@@ -147,21 +147,29 @@ class ChangesCollector {
         val kind = Flags.CLASS_KIND.get(proto.flags)
 
         if (kind == ProtoBuf.Class.Kind.COMPANION_OBJECT) {
-            val memberNames =
-                    proto.getNonPrivateNames(
-                            nameResolver,
-                            ProtoBuf.Class::getConstructorList,
-                            ProtoBuf.Class::getFunctionList,
-                            ProtoBuf.Class::getPropertyList
-                    ) + proto.enumEntryList.map { nameResolver.getString(it.name) }
+            val memberNames = getNonPrivateMemberNames()
 
             val collectMember = if (isRemoved) this@ChangesCollector::collectRemovedMember else this@ChangesCollector::collectChangedMember
             collectMember(classFqName.parent(), classFqName.shortName().asString())
             memberNames.forEach { collectMember(classFqName, it) }
         }
         else {
+            if (!isRemoved) {
+                val memberNames = getNonPrivateMemberNames()
+                memberNames.forEach { this@ChangesCollector.collectChangedMember(classFqName, it) }
+            }
+
             collectSignature(classFqName, areSubclassesAffected = true)
         }
+    }
+
+    private fun ClassProtoData.getNonPrivateMemberNames(): Set<String> {
+        return proto.getNonPrivateNames(
+                nameResolver,
+                ProtoBuf.Class::getConstructorList,
+                ProtoBuf.Class::getFunctionList,
+                ProtoBuf.Class::getPropertyList
+        ) + proto.enumEntryList.map { nameResolver.getString(it.name) }
     }
 
     fun collectMemberIfValueWasChanged(scope: FqName, name: String, oldValue: Any?, newValue: Any?) {

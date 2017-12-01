@@ -18,7 +18,6 @@ package org.jetbrains.kotlin.gradle.tasks
 
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.file.SourceDirectorySet
 import org.gradle.api.logging.Logger
 import org.gradle.api.plugins.BasePluginConvention
 import org.gradle.api.tasks.Input
@@ -250,6 +249,12 @@ open class KotlinCompile : AbstractKotlinCompile<K2JVMCompilerArguments>(), Kotl
     internal var artifactDifferenceRegistryProvider: ArtifactDifferenceRegistryProvider? = null
     internal var artifactFile: File? = null
 
+    var usePreciseJavaTracking: Boolean = false
+        set(value) {
+            field = value
+            logger.kotlinDebug { "Set $this.usePreciseJavaTracking=$value" }
+        }
+
     init {
         incremental = true
     }
@@ -314,7 +319,9 @@ open class KotlinCompile : AbstractKotlinCompile<K2JVMCompilerArguments>(), Kotl
                         artifactDifferenceRegistryProvider,
                         artifactFile = artifactFile,
                         buildHistoryFile = buildHistoryFile,
-                        friendBuildHistoryFile = friendTask?.buildHistoryFile)
+                        friendBuildHistoryFile = friendTask?.buildHistoryFile,
+                        usePreciseJavaTracking = usePreciseJavaTracking
+                )
             }
         }
 
@@ -465,7 +472,10 @@ open class Kotlin2JsCompile() : AbstractKotlinCompile<K2JSCompilerArguments>(), 
                 logger.warn(USING_EXPERIMENTAL_JS_INCREMENTAL_COMPILATION_MESSAGE)
                 GradleIncrementalCompilerEnvironment(
                         computedCompilerClasspath, changedFiles, reporter, taskBuildDirectory,
-                        messageCollector, outputItemCollector, args)
+                        messageCollector, outputItemCollector, args,
+                        // No need to track Java classes in JS
+                        usePreciseJavaTracking = false
+                )
             }
             else -> {
                 GradleCompilerEnvironment(computedCompilerClasspath, messageCollector, outputItemCollector, args)

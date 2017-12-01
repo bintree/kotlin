@@ -239,7 +239,7 @@ abstract class AbstractKotlinAndroidWithJackGradleTests(
         private val androidGradlePluginVersion: String
 ) : BaseGradleIT() {
 
-    fun getEnvJDK_18() = System.getenv()["JDK_18"]
+    fun getEnvJDK_18() = "/opt/java/jdk1.8.0_102/"
 
     override fun defaultBuildOptions() =
             super.defaultBuildOptions().copy(androidHome = File(ANDROID_HOME_PATH),

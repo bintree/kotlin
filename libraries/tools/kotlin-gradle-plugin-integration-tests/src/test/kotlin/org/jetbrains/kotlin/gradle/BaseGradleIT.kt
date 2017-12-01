@@ -1,7 +1,7 @@
 package org.jetbrains.kotlin.gradle
 
-import org.gradle.api.logging.LogLevel
 import com.intellij.openapi.util.io.FileUtil
+import org.gradle.api.logging.LogLevel
 import org.jetbrains.kotlin.gradle.util.*
 import org.junit.After
 import org.junit.AfterClass
@@ -140,13 +140,15 @@ abstract class BaseGradleIT {
             val daemonOptionSupported: Boolean = true,
             val incremental: Boolean? = null,
             val androidHome: File? = null,
-            val javaHome: File? = null,
+            val javaHome: File? = File("/opt/java/jdk1.8.0_102/"),
             val androidGradlePluginVersion: String? = null,
             val forceOutputToStdout: Boolean = false,
             val debug: Boolean = false,
             val freeCommandLineArgs: List<String> = emptyList(),
             val kotlinVersion: String = KOTLIN_VERSION,
-            val kotlinDaemonDebugPort: Int? = null)
+            val kotlinDaemonDebugPort: Int? = 5006,
+            val usePreciseJavaTracking: Boolean? = null
+    )
 
     open inner class Project(
             val projectName: String,
@@ -441,6 +443,7 @@ abstract class BaseGradleIT {
 
                 add("-Pkotlin_version=" + options.kotlinVersion)
                 options.incremental?.let { add("-Pkotlin.incremental=$it") }
+                options.usePreciseJavaTracking?.let { add("-Pkotlin.incremental.usePreciseJavaTracking=$it") }
                 options.androidGradlePluginVersion?.let { add("-Pandroid_tools_version=$it")}
                 if (options.debug) {
                     add("-Dorg.gradle.debug=true")

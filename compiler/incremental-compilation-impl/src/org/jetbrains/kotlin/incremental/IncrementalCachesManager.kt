@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.incremental
 
 import org.jetbrains.kotlin.incremental.storage.BasicMapsOwner
+import org.jetbrains.kotlin.name.ClassId
 import java.io.File
 
 abstract class IncrementalCachesManager<PlatformCache : IncrementalCacheCommon>(
@@ -75,6 +76,20 @@ class IncrementalJvmCachesManager(
 
     private val jvmCacheDir = File(cacheDirectory, "jvm").apply { mkdirs() }
     override val platformCache = IncrementalJvmCache(jvmCacheDir, outputDir).apply { registerCache() }
+
+    private val changedUntrackedJavaClasses = mutableSetOf<ClassId>()
+    fun addChangedUntrackedJavaClass(classId: ClassId) {
+        changedUntrackedJavaClasses.add(classId)
+    }
+
+    fun getAndClearUntrackedJavaClasses(): Set<ClassId> {
+        val result = changedUntrackedJavaClasses.toSet()
+        changedUntrackedJavaClasses.clear()
+        return result
+    }
+
+    fun anyJavaClassToTrack() =
+            platformCache.getObsoleteJavaClasses().isNotEmpty() || changedUntrackedJavaClasses.isNotEmpty()
 }
 
 class IncrementalJsCachesManager(

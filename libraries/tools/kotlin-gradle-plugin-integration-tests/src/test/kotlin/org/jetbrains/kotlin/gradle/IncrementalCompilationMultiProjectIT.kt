@@ -89,18 +89,91 @@ open class A {
     }
 
     @Test
-    fun testModifyJavaInLib() {
+    fun testModifySignatureJavaInLibDefaultPreciseJavaTrackingMode() {
+        doTestSignatureChangeInJavaClass(
+                usePreciseJavaTracking = null,
+                expectedAffectedSources = listOf("JavaClassChild.kt", "useJavaClass.kt", "useJavaClassFooMethodUsage.kt")
+        )
+    }
+
+    @Test
+    fun testModifySignatureJavaInLibDisabledPreciseJavaTrackingMode() {
+        doTestSignatureChangeInJavaClass(
+                usePreciseJavaTracking = false,
+                expectedAffectedSources = listOf("JavaClassChild.kt", "useJavaClass.kt", "useJavaClassFooMethodUsage.kt")
+        )
+    }
+
+    @Test
+    fun testModifySignatureJavaInLibEnabledPreciseJavaTrackingMode() {
+        doTestSignatureChangeInJavaClass(
+                usePreciseJavaTracking = true,
+                expectedAffectedSources = listOf("useJavaClass.kt")
+        )
+    }
+
+    private fun doTestSignatureChangeInJavaClass(
+            usePreciseJavaTracking: Boolean?,
+            expectedAffectedSources: Collection<String>
+    ) {
         val project = Project("incrementalMultiproject", GRADLE_VERSION)
-        project.build("build") {
+        val options = defaultBuildOptions().copy(usePreciseJavaTracking = usePreciseJavaTracking)
+        project.build("build", options = options) {
             assertSuccessful()
         }
 
         val javaClassJava = project.projectDir.getFileByName("JavaClass.java")
         javaClassJava.modify { it.replace("String getString", "Object getString") }
 
-        project.build("build") {
+        project.build("build", options = options) {
             assertSuccessful()
-            val affectedSources = project.projectDir.getFilesByNames("JavaClassChild.kt", "useJavaClass.kt")
+            val affectedSources = project.projectDir.getFilesByNames(*expectedAffectedSources.toTypedArray())
+            val relativePaths = project.relativize(affectedSources)
+            assertCompiledKotlinSources(relativePaths, weakTesting = false)
+        }
+    }
+
+    @Test
+    fun testModifyBodyJavaInLibDefaultPreciseJavaTrackingMode() {
+        doTestBodyChangeInJavaClass(
+                usePreciseJavaTracking = null,
+                expectedAffectedSources = listOf("JavaClassChild.kt", "useJavaClass.kt", "useJavaClassFooMethodUsage.kt")
+        )
+    }
+
+    @Test
+    fun testModifyBodyJavaInLibDisabledPreciseJavaTracking() {
+        doTestBodyChangeInJavaClass(
+                usePreciseJavaTracking = false,
+                expectedAffectedSources = listOf("JavaClassChild.kt", "useJavaClass.kt", "useJavaClassFooMethodUsage.kt")
+        )
+    }
+
+    @Test
+    fun testModifyBodyJavaInLibEnabledPreciseJavaTracking() {
+        doTestBodyChangeInJavaClass(
+                usePreciseJavaTracking = true,
+                expectedAffectedSources = listOf()
+        )
+    }
+
+    private fun doTestBodyChangeInJavaClass(
+            usePreciseJavaTracking: Boolean?,
+            expectedAffectedSources: Collection<String>
+    ) {
+        val project = Project("incrementalMultiproject", GRADLE_VERSION)
+
+        val options = defaultBuildOptions().copy(usePreciseJavaTracking = usePreciseJavaTracking)
+        project.build("build", options = options) {
+            assertSuccessful()
+        }
+
+        val javaClassJava = project.projectDir.getFileByName("JavaClass.java")
+        javaClassJava.modify { it.replace("Hello, World!", "Hello, World!!!!") }
+
+        project.build("build", options = options) {
+            assertSuccessful()
+            val affectedSources = project.projectDir.getFilesByNames(*expectedAffectedSources.toTypedArray())
             val relativePaths = project.relativize(affectedSources)
             assertCompiledKotlinSources(relativePaths, weakTesting = false)
         }
